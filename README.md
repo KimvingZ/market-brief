@@ -163,9 +163,11 @@ python -m brief.run finish --data out --work work
   next one.
 * **Hourly grading** uses whole hourly bars, so the start of a session window
   can include a few minutes from before the call.
-* **GitHub's scheduler** can run late, sometimes by 10 to 20 minutes. Each
-  Claude run waits up to 15 minutes for fresh data, then reports with a
-  "data delayed" banner rather than pretending.
+* **GitHub's scheduler** can run late or skip runs (on this repository it
+  hadn't fired at all on its first day). So each report starts its own price
+  snapshot when it begins and waits up to 15 minutes for it. If the prices
+  are still stale after that, the report shows a "data delayed" banner and
+  makes no calls from old prices.
 * **GitHub pauses scheduled workflows** in a public repository after 60 days
   without activity. If the dashboard keeps saying "data delayed", open the
   repository's Actions tab and re-enable the `snapshot` workflow.
