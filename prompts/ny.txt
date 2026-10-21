@@ -9,7 +9,7 @@ mkdir -p ~/mb && cd ~/mb
 git clone -q --depth 1 https://github.com/KimvingZ/market-brief.git code
 git clone -q --depth 1 -b data https://github.com/KimvingZ/market-brief.git data
 mkdir -p work
-pip install --break-system-packages -q -r code/requirements.txt
+pip install --break-system-packages -q -r code/requirements-run.txt
 ```
 (If `~/mb` already exists from an earlier run in this session, use a new folder name instead.)
 
