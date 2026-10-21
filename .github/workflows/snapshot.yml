@@ -4,10 +4,20 @@ name: snapshot
 # and overwrite the `data` branch with the result. Claude's scheduled runs read
 # that branch. The first run after the crypto daily close (00:05 UTC) refetches
 # full history; the others only add recent bars.
+#
+# GitHub sometimes drops scheduled runs when it is busy, so there are extra
+# runs just before each report (times in UTC; summer and winter time both
+# covered):
+#   07:35 Phnom Penh report (00:35 UTC)      -> 00:12, 00:22
+#   07:20 London update (06:20 or 07:20 UTC)  -> 06:12, 07:12 on weekdays
+#   08:47 New York update (12:47 or 13:47)    -> 12:38, 12:42, 13:38, 13:42 on weekdays
 
 on:
   schedule:
     - cron: "5,35 * * * *"
+    - cron: "12,22 0 * * *"
+    - cron: "12 6,7 * * 1-5"
+    - cron: "38,42 12,13 * * 1-5"
   workflow_dispatch:
     inputs:
       mode:
