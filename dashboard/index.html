@@ -1,0 +1,620 @@
+<style>
+  .mb { font-family: var(--font-anthropic-sans); max-width: 1240px; margin-inline: auto; font-variant-numeric: tabular-nums; }
+  .mb h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+  .mb h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-lg) 0 var(--cds-gap-sm); }
+  .mb h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); }
+  .mb p { margin: 0 0 var(--cds-gap-sm); }
+  .mb .muted { color: var(--color-fg-muted); }
+  .mb .cap { font-size: var(--cds-font-size-caption); }
+  .mb .head { display: grid; gap: var(--cds-gap-xs); margin-bottom: var(--cds-gap-md); }
+  .mb .takeaway { font-size: var(--cds-font-size-heading); }
+  .mb .banner { border: 1px solid var(--color-border-line); border-left: 3px solid var(--color-warn); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); }
+  .mb .banner:empty { display: none; }
+  .mb .tabs { display: flex; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); margin: var(--cds-gap-md) 0; overflow-x: auto; }
+  .mb .tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: var(--cds-pad-sm) var(--cds-pad-md); font: inherit; color: var(--color-fg-muted); cursor: pointer; white-space: nowrap; }
+  .mb .tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); }
+  .mb .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+  .mb .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
+  .mb .grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--cds-gap-md); }
+  .mb .scroll { overflow-x: auto; }
+  .mb table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); }
+  .mb th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .mb td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .mb td.num, .mb th.num { text-align: right; }
+  .mb tbody tr[data-key] { cursor: pointer; }
+  .mb .long { color: var(--color-ok); }
+  .mb .short { color: var(--color-bad); }
+  .mb .neutral, .mb .none { color: var(--color-fg-muted); }
+  .mb .up { color: var(--color-ok); }
+  .mb .down { color: var(--color-bad); }
+  .mb .pill { display: inline-block; border: 1px solid currentColor; border-radius: 999px; padding: 0 var(--cds-pad-xs); font-size: var(--cds-font-size-caption); line-height: 1.5; }
+  .mb .events { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); list-style: none; padding: 0; margin: 0; }
+  .mb .events li { font-size: var(--cds-font-size-caption); }
+  .mb .dot { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 50%; margin-right: 0.3rem; background: var(--color-fg-muted); }
+  .mb .dot.High { background: var(--color-bad); }
+  .mb .dot.Medium { background: var(--color-warn); }
+  .mb .acard header { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+  .mb .price { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); font-weight: 400; }
+  .mb .chart { position: relative; min-height: 200px; margin: var(--cds-gap-sm) 0; }
+  .mb .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; }
+  .mb .calls { display: grid; gap: var(--cds-gap-xs); margin: var(--cds-gap-sm) 0; }
+  .mb .call { display: grid; grid-template-columns: 5.5rem 1fr; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-xs); }
+  .mb .call .why { grid-column: 2; color: var(--color-fg-muted); }
+  .mb details { margin-top: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); }
+  .mb summary { cursor: pointer; color: var(--color-fg-muted); }
+  .mb ul.drivers { margin: var(--cds-gap-xs) 0; padding-left: 1.1rem; }
+  .mb a { color: inherit; }
+  .mb .big { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); font-weight: 400; }
+  .mb .box { max-height: 34rem; overflow: auto; }
+  .mb .box th { position: sticky; top: 0; background: var(--color-panel); }
+  .mb input.search { font: inherit; padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: transparent; color: inherit; margin-bottom: var(--cds-gap-sm); width: min(100%, 20rem); }
+  .mb .method p, .mb .method li { max-width: 46rem; }
+  .mb [data-dash-source-state=empty] { color: transparent; }
+  .mb [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+  .mb .fail { display: flex; align-items: center; justify-content: center; min-height: 3rem; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .mb .fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); margin-right: .4rem; }
+  @media (max-width: 640px) { .mb .hide-sm { display: none; } }
+</style>
+
+<div class="mb">
+  <section class="head" id="top">
+    <h1>Market Brief</h1>
+    <div class="takeaway dash-skeleton" data-source="meta" data-field="headline" data-row="0">—</div>
+    <div class="cap muted" id="runline"><span class="dash-skeleton" data-source="meta" data-field="run_label" data-row="0">—</span> · <span data-source="meta" data-field="made_local" data-row="0">—</span> Phnom Penh · prices from <span data-source="meta" data-field="data_generated_local" data-row="0">—</span> · next: <span data-source="meta" data-field="next_run_label" data-row="0">—</span> <span data-source="meta" data-field="next_run_local" data-row="0">—</span></div>
+    <div class="banner cap" data-source="meta" data-field="banner" data-row="0"></div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Pages">
+    <button class="tab" role="tab" id="tab-today" data-page="today" aria-selected="true">Today</button>
+    <button class="tab" role="tab" id="tab-scorecard" data-page="scorecard" aria-selected="false">Scorecard</button>
+    <button class="tab" role="tab" id="tab-history" data-page="history" aria-selected="false">History</button>
+    <button class="tab" role="tab" id="tab-method" data-page="method" aria-selected="false">How it works</button>
+  </nav>
+
+  <section id="today" data-pagebody="today">
+    <p class="dash-skeleton" id="overview" data-source="meta" data-field="overview" data-row="0">—</p>
+    <div class="card" id="events-card">
+      <h3>Scheduled events, Phnom Penh time</h3>
+      <ul class="events" id="events" data-source="events"></ul>
+    </div>
+    <h2 id="summary">All calls</h2>
+    <p class="cap muted">Today = until the next daily close · Week and month = 1 week and 1 month ahead · Session = until the next update. "Likely" is how often the same setup closed higher, against the asset's normal rate, with the number of past cases.</p>
+    <div id="tables"></div>
+    <h2 id="assets">Assets</h2>
+    <div class="grid" id="cards"></div>
+    <h2 id="context">Market context</h2>
+    <div class="card scroll" id="context-card"></div>
+  </section>
+
+  <section id="scorecard" data-pagebody="scorecard" hidden></section>
+  <section id="history" data-pagebody="history" hidden></section>
+
+  <section id="method" data-pagebody="method" class="method" hidden>
+    <h2>What this page is for</h2>
+    <p>It feeds your own trade plan: a lean for each horizon, the levels that matter, the price that proves the lean wrong, and what is scheduled. It never sets entries or stops, and it does not trade.</p>
+    <h2>Where the numbers come from</h2>
+    <p>Prices, indicators, levels and percentages are computed by code on GitHub every 30 minutes, from public exchange and market data. Claude reads the news and writes the words. A checker rejects any report whose numbers differ from the computed ones.</p>
+    <h2>How "likely" is measured</h2>
+    <p>Every past day of an asset gets a label: trend (above or below its 50- and 200-day averages), momentum (RSI below 40, 40 to 60, above 60) and volatility (calm, normal or wild for that asset). The page counts how often price was higher after the same horizon on past days with today's label, and shows it next to the asset's normal up-rate on any day.</p>
+    <p>The gap between the two is the edge. 56% against a normal 53% is a 3-point edge, not a 56% signal. Week and month windows overlap, so their case counts are divided by the window length. With too few matching days the label gets coarser, down to all days, marked low sample.</p>
+    <h2>How a call is chosen</h2>
+    <p>Three technical signals vote for each horizon. Two or three votes the same way, with a measured edge that doesn't point the other way, give the code's lean. Its confidence cap is high only when all three agree, the edge is at least 5 points, there are 60 or more independent cases and the likely range clears the normal rate; medium needs 2 points and 30 cases. Claude may keep the lean or go neutral and may lower the confidence, never raise it or take the other side. A call against a neutral lean has to be news-driven, low confidence and linked.</p>
+    <h2>How calls are judged</h2>
+    <p>When a call's window closes, the next run grades it: a long is right if price closed above where it was called, a short if below. Neutral calls are not scored for direction. The scorecard groups results by day, week or month, so that many assets moving together on one day don't count as independent wins, and says plainly whether the calls beat a coin flip yet.</p>
+  </section>
+
+  <template id="tpl-scorecard">
+    <h2>Are the calls better than a coin flip?</h2>
+    <p class="cap muted">Hit rate = share of long and short calls that closed the right way. The likely range comes from grouping calls by period. About 30 periods are needed before the verdict means much.</p>
+    <div class="grid4" id="score-cards" data-source="scores"></div>
+    <div class="grid" style="margin-top: var(--cds-gap-md)">
+      <div class="card">
+        <h3>Were the percentages right?</h3>
+        <p class="cap muted">For calls grouped by the percentage shown, how often price actually closed higher. Dots near the diagonal mean the percentages can be trusted.</p>
+        <div class="chart" id="calib-chart" data-source="calibration"></div>
+      </div>
+      <div class="card">
+        <h3>By confidence</h3>
+        <p class="cap muted">High confidence should hit more often than low. If it doesn't, the cap is not adding anything.</p>
+        <table id="conf-table" data-source="confidence_scores" data-row-key="confidence">
+          <thead><tr><th data-field="confidence">Confidence</th><th class="num" data-field="n">Calls</th><th class="num" data-field="hits">Right</th><th class="num" data-field="rate">Hit rate</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-top: var(--cds-gap-md)">
+      <h3>By asset</h3>
+      <p class="cap muted">Small samples: read these as a log, not a verdict.</p>
+      <div class="box">
+        <table id="asset-score-table" data-source="asset_scores" data-row-key="asset,horizon">
+          <thead><tr><th data-field="asset">Asset</th><th data-field="horizon">Horizon</th><th class="num" data-field="n">Calls</th><th class="num" data-field="hits">Right</th><th class="num" data-field="rate">Hit rate</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-history">
+    <h2>Reports</h2>
+    <div class="card box">
+      <table id="runs-table" data-source="runs" data-row-key="id">
+        <thead><tr><th data-field="id" class="hide-sm">Run</th><th data-field="made_local">Time</th><th data-field="run_label">Report</th><th data-field="headline">Headline</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <h2>Every call</h2>
+    <input class="search" id="call-search" type="search" placeholder="Filter, e.g. BTC or long" aria-label="Filter calls">
+    <div class="card box">
+      <table id="calls-table" data-source="calls_log" data-row-key="id">
+        <thead><tr>
+          <th data-field="id" class="hide-sm">Call</th><th data-field="made_local">Made</th><th data-field="asset">Asset</th><th data-field="horizon">Horizon</th>
+          <th data-field="bias">Call</th><th data-field="confidence">Conf.</th><th class="num" data-field="p_up">Likely</th>
+          <th class="num" data-field="ref_price">From</th><th class="num" data-field="close_price">To</th><th class="num" data-field="ret_pct">Move</th>
+          <th data-field="correct">Result</th><th data-field="invalidated" class="hide-sm">Hit invalidation</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </template>
+</div>
+
+<script>
+  // ---- calculations: split the two data files into the tables the page uses
+  dash.calc('meta', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'meta'),
+    title: 'This report', description: 'The report row of the latest run: time, headline, data age, next run.' });
+  dash.calc('assets', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'asset'),
+    title: 'Assets and calls', description: 'One row per asset: price, technical readout, levels and the latest call for each horizon.' });
+  dash.calc('levels', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'level'),
+    title: 'Levels', description: 'Support and resistance levels per asset, computed from swings, prior highs and lows, averages and round numbers.' });
+  dash.calc('candles', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'candle'),
+    title: 'Daily prices', description: 'The last 90 daily bars per asset, plus the bar in progress.' });
+  dash.calc('events', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'event'),
+    title: 'Economic calendar', description: 'High and medium impact events around this report, from the Forex Factory weekly calendar.' });
+  dash.calc('scores', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'score'),
+    title: 'Scorecard', description: 'Hit rate per horizon with a likely range from period-grouped results, and the verdict.' });
+  dash.calc('calibration', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'calib'),
+    title: 'Calibration', description: 'For graded calls grouped by the percentage shown, the share that actually closed higher.' });
+  dash.calc('asset_scores', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'asset_score'),
+    title: 'Hit rate by asset', description: 'Graded long and short calls per asset and horizon.' });
+  dash.calc('confidence_scores', { inputs: ['brief'], fn: (brief) => brief.filter((r) => r.kind === 'conf_score'),
+    title: 'Hit rate by confidence', description: 'Graded long and short calls per confidence level.' });
+  dash.calc('calls_log', { inputs: ['ledger'], fn: (ledger) => ledger.filter((r) => r.kind === 'call').sort((a, b) => (a.made_at < b.made_at ? 1 : -1)),
+    title: 'Call log', description: 'Every call made, newest first, with its outcome once graded.' });
+  dash.calc('runs', { inputs: ['ledger'], fn: (ledger) => ledger.filter((r) => r.kind === 'run').sort((a, b) => (a.made_at < b.made_at ? 1 : -1)),
+    title: 'Report log', description: 'Every report, newest first.' });
+</script>
+
+<script>
+  // ---- helpers shared by the page scripts (on window: each script has its own scope)
+  window.mbx = (() => {
+    const num = (x) => (x === null || x === undefined || x === '' ? null : Number(x));
+    const text = (x) => (x === null || x === undefined ? '' : String(x));
+    const truthy = (x) => x === true || x === 'true';
+    const price = (x, dec) => { const v = num(x); return v === null || Number.isNaN(v) ? '—' : d3.format(`,.${Math.max(0, Math.min(6, num(dec) ?? 2))}f`)(v); };
+    const chg = (x) => { const v = num(x); return v === null ? '—' : `${v > 0 ? '+' : ''}${v.toFixed(1)}%`; };
+    const pct = (x) => { const v = num(x); return v === null ? '—' : d3.format('.0%')(v); };
+    const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+    const el = (tag, attrs = {}, kids = []) => {
+      const e = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (v === null || v === undefined || v === false) continue;
+        if (k === 'text') e.textContent = v; else if (k === 'cls') e.className = v; else e.setAttribute(k, v);
+      }
+      for (const k of [].concat(kids)) if (k) e.append(k);
+      return e;
+    };
+    const mark = (source, field, where) => ({ 'data-source': source, 'data-field': field, 'data-where': where });
+    const rows = (id) => { const d = dash.data(id); return d.status === 'ok' && Array.isArray(d.data) ? d.data : []; };
+    const failBox = (box, id) => {
+      const d = dash.data(id);
+      if (d.status === 'error') { box.replaceChildren(el('div', { cls: 'fail', text: 'Failed to load' })); return true; }
+      return false;
+    };
+    const safeUrl = (u) => (/^https:\/\//.test(text(u)) ? u : null);
+    return { num, text, truthy, price, chg, pct, cap, el, mark, rows, failBox, safeUrl };
+  })();
+</script>
+
+<script>
+  // ---- tabs
+  const pages = ['today', 'scorecard', 'history', 'method'];
+  window.mbPage = 'today';
+  const built = {};
+  function show(page) {
+    if (!pages.includes(page)) page = 'today';
+    window.mbPage = page;
+    for (const p of pages) {
+      document.getElementById(p).hidden = p !== page;
+      document.getElementById('tab-' + p).setAttribute('aria-selected', String(p === page));
+    }
+    if ((page === 'scorecard' || page === 'history') && !built[page]) {
+      document.getElementById(page).append(document.getElementById('tpl-' + page).content.cloneNode(true));
+      built[page] = true;
+      if (page === 'history') {
+        document.getElementById('call-search').addEventListener('input', () => window.mbDraw && window.mbDraw());
+      }
+    }
+    dash.setLink(page);
+    if (window.mbDraw) window.mbDraw();
+  }
+  for (const b of document.querySelectorAll('.tab')) b.addEventListener('click', () => show(b.dataset.page));
+  window.mbShow = show;
+</script>
+
+<script>
+  // ---- Today page
+  const { num, text, truthy, price, chg, pct, cap, el, mark, rows, failBox, safeUrl } = window.mbx;
+  const HZ = [['today', 'Today'], ['short', 'Week'], ['long', 'Month'], ['session', 'Session']];
+
+  function biasCell(r, hz) {
+    const b = text(r[hz + '_bias']);
+    return el('td', { cls: b || 'none', text: b ? cap(b) : '–' });
+  }
+
+  function drawTables(assets) {
+    const box = document.getElementById('tables');
+    if (failBox(box, 'brief')) return;
+    const groups = d3.groups(assets.filter((r) => truthy(r.has_calls)), (r) => r.group_label);
+    const out = [];
+    for (const [label, list] of groups) {
+      const head = el('tr', {}, [
+        el('th', { 'data-field': 'id', text: 'Asset' }),
+        el('th', { cls: 'num', 'data-field': 'price', text: 'Price' }),
+        el('th', { cls: 'num', 'data-field': 'chg_24h', text: '24h' }),
+        el('th', { 'data-field': 'today_bias', text: 'Today' }),
+        el('th', { 'data-field': 'today_conf', text: 'Conf.' }),
+        el('th', { cls: 'num', 'data-field': 'today_p', text: 'Likely' }),
+        el('th', { cls: 'num hide-sm', 'data-field': 'today_base', text: 'Normal' }),
+        el('th', { cls: 'num hide-sm', 'data-field': 'today_n', text: 'Cases' }),
+        el('th', { 'data-field': 'short_bias', text: 'Week' }),
+        el('th', { 'data-field': 'long_bias', text: 'Month' }),
+        el('th', { 'data-field': 'session_bias', text: 'Session' }),
+        el('th', { cls: 'num hide-sm', 'data-field': 'sup1', text: 'Support' }),
+        el('th', { cls: 'num hide-sm', 'data-field': 'res1', text: 'Resistance' }),
+        el('th', { cls: 'num', 'data-field': 'today_inv', text: 'Wrong below/above' }),
+      ]);
+      const body = el('tbody');
+      for (const r of list.sort((a, b) => num(a.order) - num(b.order))) {
+        const c24 = num(r.chg_24h);
+        const tr = el('tr', { 'data-key': r.id }, [
+          el('td', { text: r.id }),
+          el('td', { cls: 'num', text: price(r.price, r.decimals) }),
+          el('td', { cls: 'num ' + (c24 > 0 ? 'up' : c24 < 0 ? 'down' : ''), text: chg(r.chg_24h) }),
+          biasCell(r, 'today'),
+          el('td', { cls: 'muted', text: text(r.today_conf) || '–' }),
+          el('td', { cls: 'num', text: pct(r.today_p) }),
+          el('td', { cls: 'num muted hide-sm', text: pct(r.today_base) }),
+          el('td', { cls: 'num muted hide-sm', text: r.today_n == null ? '—' : d3.format(',')(num(r.today_n)) }),
+          biasCell(r, 'short'),
+          biasCell(r, 'long'),
+          biasCell(r, 'session'),
+          el('td', { cls: 'num hide-sm', text: price(r.sup1, r.decimals) }),
+          el('td', { cls: 'num hide-sm', text: price(r.res1, r.decimals) }),
+          el('td', { cls: 'num', text: price(r.today_inv, r.decimals) }),
+        ]);
+        tr.addEventListener('click', () => {
+          const card = document.getElementById('asset-' + r.id);
+          if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); dash.setLink('asset-' + r.id); }
+        });
+        body.append(tr);
+      }
+      out.push(el('div', { cls: 'card scroll', style: 'margin-bottom: var(--cds-gap-md)' }, [
+        el('h3', { text: label }),
+        el('table', { 'data-source': 'assets', 'data-row-key': 'id' }, [el('thead', {}, head), body]),
+      ]));
+    }
+    box.replaceChildren(...out);
+  }
+
+  function drawChart(box, a, candles, levels) {
+    box.replaceChildren();
+    const W = Math.max(260, box.clientWidth || 0);
+    const H = 200;
+    if (!candles.length) { box.append(el('p', { cls: 'cap muted', text: 'No price history.' })); return; }
+    const dec = num(a.decimals) ?? 2;
+    const fmt = (v) => price(v, dec);
+    const lines = [];
+    for (const [k, lab] of [['sup1', 'S1'], ['sup2', 'S2'], ['res1', 'R1'], ['res2', 'R2']]) {
+      if (num(a[k]) !== null) lines.push({ y: num(a[k]), lab, kind: k.startsWith('sup') ? 'sup' : 'res' });
+    }
+    if (num(a.today_inv) !== null) lines.push({ y: num(a.today_inv), lab: 'Wrong', kind: 'inv' });
+    const lo = d3.min([...candles.map((c) => num(c.l)), ...lines.map((l) => l.y)]);
+    const hi = d3.max([...candles.map((c) => num(c.h)), ...lines.map((l) => l.y)]);
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
+      .attr('aria-label', `${a.name} daily prices with levels`);
+    // measure the widest right-hand label to set the margin
+    const probe = svg.append('text').attr('font-size', 11).text(`Wrong ${fmt(hi)}`);
+    const labW = probe.node().getComputedTextLength ? probe.node().getComputedTextLength() : 80;
+    probe.remove();
+    const m = { l: 4, r: Math.ceil(labW) + 10, t: 8, b: 18 };
+    const x = d3.scaleBand(candles.map((c) => c.t), [m.l, W - m.r]).padding(0.25);
+    const y = d3.scaleLinear([lo, hi], [H - m.b, m.t]).nice();
+    svg.append('g').selectAll('line').data(y.ticks(4)).join('line')
+      .attr('x1', m.l).attr('x2', W - m.r).attr('y1', (d) => y(d)).attr('y2', (d) => y(d))
+      .attr('stroke', 'var(--cds-chart-grid)').attr('stroke-width', 1);
+    const g = svg.append('g');
+    g.selectAll('line').data(candles).join('line')
+      .attr('x1', (c) => x(c.t) + x.bandwidth() / 2).attr('x2', (c) => x(c.t) + x.bandwidth() / 2)
+      .attr('y1', (c) => y(num(c.h))).attr('y2', (c) => y(num(c.l)))
+      .attr('stroke', (c) => (num(c.c) >= num(c.o) ? 'var(--color-ok)' : 'var(--color-bad)'));
+    g.selectAll('rect').data(candles).join('rect')
+      .attr('x', (c) => x(c.t)).attr('width', x.bandwidth())
+      .attr('y', (c) => y(Math.max(num(c.o), num(c.c))))
+      .attr('height', (c) => Math.max(1, Math.abs(y(num(c.o)) - y(num(c.c)))))
+      .attr('fill', (c) => (num(c.c) >= num(c.o) ? 'var(--color-ok)' : 'var(--color-bad)'))
+      .attr('opacity', (c) => (truthy(c.partial) ? 0.45 : 0.9));
+    // level lines with labels kept apart
+    const placed = [];
+    for (const l of lines.sort((p, q) => q.y - p.y)) {
+      let ly = y(l.y);
+      for (const p of placed) if (Math.abs(p - ly) < 12) ly = p + 12;
+      placed.push(ly);
+      const color = l.kind === 'inv' ? 'var(--color-warn)' : 'var(--cds-chart-reference)';
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(l.y)).attr('y2', y(l.y))
+        .attr('stroke', color).attr('stroke-width', 1).attr('stroke-dasharray', l.kind === 'inv' ? '4 3' : '2 3');
+      svg.append('text').attr('x', W - m.r + 4).attr('y', ly).attr('dy', '0.32em').attr('font-size', 11)
+        .attr('fill', l.kind === 'inv' ? 'var(--color-warn)' : 'var(--color-fg-muted)').text(`${l.lab} ${fmt(l.y)}`);
+    }
+    const ticks = candles.filter((c, i) => i % Math.ceil(candles.length / 3) === 0);
+    svg.append('g').selectAll('text').data(ticks).join('text')
+      .attr('x', (c) => x(c.t)).attr('y', H - 4).attr('font-size', 11).attr('fill', 'var(--color-fg-muted)')
+      .text((c) => d3.utcFormat('%b %-d')(new Date(c.t + 'T00:00:00Z')));
+    // tooltip
+    const tip = d3.select(box).append('div').attr('class', 'tip').style('display', 'none');
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.r - m.l).attr('height', H - m.b - m.t)
+      .attr('fill', 'transparent')
+      .on('mousemove', (event) => {
+        const [px] = d3.pointer(event);
+        const i = Math.max(0, Math.min(candles.length - 1, Math.floor((px - m.l) / x.step())));
+        const c = candles[i];
+        tip.style('display', null).style('left', `${Math.min(px + 12, W - 150)}px`).style('top', '8px')
+          .text(`${d3.utcFormat('%a %b %-d')(new Date(c.t + 'T00:00:00Z'))}: O ${fmt(c.o)} H ${fmt(c.h)} L ${fmt(c.l)} C ${fmt(c.c)}${truthy(c.partial) ? ' (in progress)' : ''}`);
+      })
+      .on('mouseleave', () => tip.style('display', 'none'));
+  }
+
+  function callRow(a, hz, label) {
+    const w = `id=${a.id}`;
+    const b = text(a[hz + '_bias']);
+    const skip = text(a[hz + '_skip']);
+    if (!b) {
+      return el('div', { cls: 'call' }, [el('span', { cls: 'muted', text: label }), el('span', { cls: 'muted', text: skip || 'no call' })]);
+    }
+    const lowS = truthy(a[hz + '_low_sample']);
+    const res = text(a[hz + '_result']);
+    const line = el('span', {}, [
+      el('span', { cls: 'pill ' + b, ...mark('assets', hz + '_bias', w), text: cap(b) }), ' ',
+      a[hz + '_conf'] ? el('span', { cls: 'muted', ...mark('assets', hz + '_conf', w), text: text(a[hz + '_conf']) }) : null,
+      a[hz + '_conf'] ? ' · ' : null,
+      el('span', { ...mark('assets', hz + '_p', w), text: pct(a[hz + '_p']) }), ' up vs ',
+      el('span', { ...mark('assets', hz + '_base', w), text: pct(a[hz + '_base']) }), ' normal',
+      el('span', { cls: 'muted', text: ` (${a[hz + '_n'] == null ? '—' : d3.format(',')(num(a[hz + '_n']))} cases${lowS ? ', low sample' : ''})` }),
+      num(a[hz + '_inv']) !== null ? ' · wrong at ' : null,
+      num(a[hz + '_inv']) !== null ? el('span', { ...mark('assets', hz + '_inv', w), text: price(a[hz + '_inv'], a.decimals) }) : null,
+      res ? el('span', { cls: res === 'right' ? 'up' : 'down', text: ` · ${res}` }) : null,
+    ]);
+    const why = [text(a[hz + '_reason'])];
+    if (hz === 'session' && text(a.session_today_view) === 'flipped') why.push(`Turned against the morning call: ${text(a.session_flip)}`);
+    if (a[hz + '_end_local']) why.push(`until ${text(a[hz + '_end_local'])}`);
+    return el('div', { cls: 'call' }, [
+      el('span', { cls: 'muted', text: label }), line,
+      el('span', { cls: 'why', text: why.filter(Boolean).join(' · ') }),
+    ]);
+  }
+
+  function drivers(json) {
+    let list = [];
+    try { list = JSON.parse(text(json) || '[]'); } catch (e) { list = []; }
+    if (!Array.isArray(list) || !list.length) return null;
+    const ul = el('ul', { cls: 'drivers' });
+    for (const d of list) {
+      const url = safeUrl(d.url);
+      ul.append(el('li', {}, [text(d.text), ' ', url ? el('a', { href: url, target: '_blank', rel: 'noopener noreferrer', text: `(${text(d.source) || 'link'})` }) : null]));
+    }
+    return ul;
+  }
+
+  function drawCards(assets, candles, levels) {
+    const box = document.getElementById('cards');
+    if (failBox(box, 'brief')) return;
+    const byAsset = d3.group(candles, (c) => c.asset);
+    const cards = [];
+    for (const a of assets.filter((r) => truthy(r.has_calls)).sort((p, q) => num(p.order) - num(q.order))) {
+      const w = `id=${a.id}`;
+      const c24 = num(a.chg_24h);
+      const card = el('article', { cls: 'card acard', id: 'asset-' + a.id, 'data-source': 'assets candles' });
+      if (a.status !== 'ok') {
+        card.append(el('h3', { text: `${a.name} (${a.id})` }), el('p', { cls: 'muted', text: 'No price data this run.' }));
+        cards.push(card);
+        continue;
+      }
+      card.append(el('header', {}, [
+        el('div', {}, [el('h3', { text: `${a.name} (${a.id})` }), el('div', { cls: 'cap muted', text: text(a.source) })]),
+        el('div', {}, [
+          el('span', { cls: 'price', ...mark('assets', 'price', w), text: price(a.price, a.decimals) }), ' ',
+          el('span', { cls: 'cap ' + (c24 > 0 ? 'up' : c24 < 0 ? 'down' : ''), ...mark('assets', 'chg_24h', w), text: chg(a.chg_24h) }),
+          el('span', { cls: 'cap muted', text: ' 24h' }),
+        ]),
+      ]));
+      const chart = el('div', { cls: 'chart', 'data-source': 'candles assets' });
+      card.append(chart);
+      const calls = el('div', { cls: 'calls' });
+      for (const [hz, label] of HZ) calls.append(callRow(a, hz, label));
+      card.append(calls);
+      if (text(a.changed)) card.append(el('p', { cls: 'cap' }, [el('b', { text: `Since the morning (${text(a.changed_local)}): ` }), el('span', { ...mark('assets', 'changed', w), text: text(a.changed) })]));
+      if (text(a.summary)) card.append(el('p', { cls: 'cap', ...mark('assets', 'summary', w), text: text(a.summary) }));
+      const dl = drivers(a.drivers);
+      if (dl) card.append(dl);
+      if (text(a.what_would_change)) card.append(el('p', { cls: 'cap muted' }, [el('b', { text: 'What would change the view: ' }), el('span', { ...mark('assets', 'what_would_change', w), text: text(a.what_would_change) })]));
+      const ta = el('details', {}, [
+        el('summary', { text: 'Technical readout and levels' }),
+        el('p', { ...mark('assets', 'state_words', w), text: text(a.state_words) }),
+        el('p', {}, [
+          `Support ${price(a.sup1, a.decimals)} (${text(a.sup1_label) || '–'}), ${price(a.sup2, a.decimals)} (${text(a.sup2_label) || '–'}) · `,
+          `Resistance ${price(a.res1, a.decimals)} (${text(a.res1_label) || '–'}), ${price(a.res2, a.decimals)} (${text(a.res2_label) || '–'})`,
+        ]),
+        num(a.funding_8h) !== null ? el('p', { text: `Funding ${d3.format('+.4f')(num(a.funding_8h))}% per 8h (${d3.format('+.1f')(num(a.funding_apr))}% a year) · open interest ${d3.format('$.3s')(num(a.oi_usd)).replace('G', 'B')}${num(a.oi_chg_24h) !== null ? ` (${chg(a.oi_chg_24h)} in 24h)` : ''} · ${text(a.deriv_source)}` }) : null,
+        num(a.rel_5d) !== null ? el('p', { text: `Versus ${text(a.rel_vs)} over 5 bars: ${d3.format('+.1f')(num(a.rel_5d))} points` }) : null,
+        num(a.asia_high) !== null || num(a.prev_ny_high) !== null ? el('p', { text:
+          [num(a.prev_ny_high) !== null ? `Previous New York ${price(a.prev_ny_low, a.decimals)}–${price(a.prev_ny_high, a.decimals)}` : null,
+           num(a.asia_high) !== null ? `Asia ${price(a.asia_low, a.decimals)}–${price(a.asia_high, a.decimals)}` : null,
+           num(a.london_high) !== null ? `London ${price(a.london_low, a.decimals)}–${price(a.london_high, a.decimals)}` : null,
+           text(a.session_flags) || null].filter(Boolean).join(' · ') }) : null,
+        text(a.notes) ? el('p', { cls: 'muted', text: `Data notes: ${text(a.notes)}` }) : null,
+      ]);
+      card.append(ta);
+      card._draw = () => drawChart(chart, a, (byAsset.get(a.id) || []).slice().sort((p, q) => (p.t < q.t ? -1 : 1)), levels);
+      cards.push(card);
+    }
+    box.replaceChildren(...cards);
+    for (const c of cards) if (c._draw) c._draw();
+  }
+
+  function drawContext(assets) {
+    const box = document.getElementById('context-card');
+    if (failBox(box, 'brief')) return;
+    const list = assets.filter((r) => !truthy(r.has_calls) && r.status === 'ok').sort((p, q) => num(p.order) - num(q.order));
+    const body = el('tbody');
+    for (const a of list) {
+      const c = num(a.chg_24h ?? a.chg_since_close);
+      body.append(el('tr', { 'data-key': a.id }, [
+        el('td', { text: a.id }),
+        el('td', { text: text(a.name) }),
+        el('td', { cls: 'num', text: price(a.price, a.decimals) }),
+        el('td', { cls: 'num ' + (num(a.chg_5d) > 0 ? 'up' : num(a.chg_5d) < 0 ? 'down' : ''), text: chg(a.chg_5d) }),
+        el('td', { text: text(a.trend_daily) || '–' }),
+        el('td', { cls: 'num', text: a.rsi == null ? '—' : d3.format('.0f')(num(a.rsi)) }),
+      ]));
+    }
+    box.replaceChildren(el('table', { 'data-source': 'assets', 'data-row-key': 'id' }, [
+      el('thead', {}, el('tr', {}, [
+        el('th', { 'data-field': 'id', text: 'Ticker' }), el('th', { 'data-field': 'name', text: 'What' }),
+        el('th', { cls: 'num', 'data-field': 'price', text: 'Last' }), el('th', { cls: 'num', 'data-field': 'chg_5d', text: '5 days' }),
+        el('th', { 'data-field': 'trend_daily', text: 'Daily trend' }), el('th', { cls: 'num', 'data-field': 'rsi', text: 'RSI' }),
+      ])),
+      body,
+    ]));
+  }
+
+  function drawEvents(events) {
+    const ul = document.getElementById('events');
+    if (failBox(ul, 'brief')) return;
+    const list = events.filter((e) => e.status === 'upcoming').sort((p, q) => (p.time_utc < q.time_utc ? -1 : 1)).slice(0, 12);
+    if (!list.length) { ul.replaceChildren(el('li', { cls: 'muted', text: 'Nothing high or medium impact coming up.' })); return; }
+    ul.replaceChildren(...list.map((e) => el('li', {}, [
+      el('span', { cls: 'dot ' + text(e.impact) }),
+      el('b', { text: text(e.time_local) }), ` ${text(e.country)} ${text(e.title)}`,
+      text(e.forecast) ? el('span', { cls: 'muted', text: ` (forecast ${text(e.forecast)})` }) : null,
+    ])));
+  }
+
+  window.mbDrawToday = () => {
+    const assets = rows('assets');
+    drawEvents(rows('events'));
+    drawTables(assets);
+    drawCards(assets, rows('candles'), rows('levels'));
+    drawContext(assets);
+  };
+</script>
+
+<script>
+  // ---- Scorecard and History pages
+  const { num, text, truthy, price, chg, pct, cap, el, rows, failBox } = window.mbx;
+
+  function drawScorecard() {
+    const cardsBox = document.getElementById('score-cards');
+    if (!cardsBox || failBox(cardsBox, 'brief')) return;
+    const scores = rows('scores');
+    cardsBox.replaceChildren(...scores.map((s) => {
+      const w = `horizon=${s.horizon}`;
+      const rate = num(s.rate);
+      return el('div', { cls: 'card' }, [
+        el('h3', { 'data-source': 'scores', 'data-field': 'label', 'data-where': w, text: text(s.label) }),
+        el('div', { cls: 'big', 'data-source': 'scores', 'data-field': 'rate', 'data-where': w, text: rate === null ? '—' : d3.format('.0%')(rate) }),
+        el('p', { cls: 'cap muted' }, [
+          el('span', { 'data-source': 'scores', 'data-field': 'hits', 'data-where': w, text: d3.format(',')(num(s.hits) || 0) }), ' right of ',
+          el('span', { 'data-source': 'scores', 'data-field': 'n', 'data-where': w, text: d3.format(',')(num(s.n) || 0) }), ' graded',
+          num(s.lo) !== null ? ` · likely range ${d3.format('.0%')(num(s.lo))}–${d3.format('.0%')(num(s.hi))}` : '',
+          ` · ${d3.format(',')(num(s.open) || 0)} still open`,
+        ]),
+        el('p', { 'data-source': 'scores', 'data-field': 'verdict', 'data-where': w, text: text(s.verdict) }),
+        num(s.invalidated_share) !== null ? el('p', { cls: 'cap muted', text: `Hit their invalidation level: ${d3.format('.0%')(num(s.invalidated_share))}` }) : null,
+      ]);
+    }));
+
+    const cbox = document.getElementById('calib-chart');
+    const cal = rows('calibration').filter((r) => num(r.n) > 0);
+    cbox.replaceChildren();
+    if (!cal.length) {
+      cbox.append(el('p', { cls: 'cap muted', text: 'Nothing graded yet.' }));
+    } else {
+      const W = Math.max(240, cbox.clientWidth || 0);
+      const H = 200;
+      const m = { l: 36, r: 12, t: 8, b: 28 };
+      const x = d3.scaleLinear([0.35, 0.75], [m.l, W - m.r]);
+      const y = d3.scaleLinear([0, 1], [H - m.b, m.t]);
+      const svg = d3.select(cbox).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+      svg.append('line').attr('x1', x(0.35)).attr('y1', y(0.35)).attr('x2', x(0.75)).attr('y2', y(0.75))
+        .attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 3');
+      const xa = svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(4).tickFormat(d3.format('.0%')));
+      xa.attr('font-size', null).attr('font-family', null).selectAll('text').attr('fill', 'var(--color-fg-muted)');
+      xa.selectAll('line,path').attr('stroke', 'var(--cds-chart-axis)');
+      const ya = svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format('.0%')));
+      ya.attr('font-size', null).attr('font-family', null).selectAll('text').attr('fill', 'var(--color-fg-muted)');
+      ya.selectAll('line,path').attr('stroke', 'var(--cds-chart-axis)');
+      svg.append('g').selectAll('circle').data(cal).join('circle')
+        .attr('cx', (d) => x(Math.max(0.35, Math.min(0.75, num(d.predicted)))))
+        .attr('cy', (d) => y(num(d.actual)))
+        .attr('r', (d) => Math.min(10, 3 + Math.sqrt(num(d.n))))
+        .attr('fill', dash.colors[0]).attr('opacity', 0.8);
+    }
+
+    const ct = document.querySelector('#conf-table tbody');
+    ct.replaceChildren(...rows('confidence_scores').map((r) => el('tr', { 'data-key': r.confidence }, [
+      el('td', { text: r.confidence }), el('td', { cls: 'num', text: d3.format(',')(num(r.n)) }),
+      el('td', { cls: 'num', text: d3.format(',')(num(r.hits)) }), el('td', { cls: 'num', text: pct(r.rate) }),
+    ])));
+    const at = document.querySelector('#asset-score-table tbody');
+    at.replaceChildren(...rows('asset_scores').map((r) => el('tr', { 'data-key': `${encodeURIComponent(r.asset)},${encodeURIComponent(r.horizon)}` }, [
+      el('td', { text: r.asset }), el('td', { text: r.horizon }), el('td', { cls: 'num', text: d3.format(',')(num(r.n)) }),
+      el('td', { cls: 'num', text: d3.format(',')(num(r.hits)) }), el('td', { cls: 'num', text: pct(r.rate) }),
+    ])));
+  }
+
+  function drawHistory() {
+    const rt = document.querySelector('#runs-table tbody');
+    if (!rt) return;
+    rt.replaceChildren(...rows('runs').slice(0, 200).map((r) => el('tr', { 'data-key': r.id }, [
+      el('td', { cls: 'hide-sm', text: r.id }), el('td', { text: text(r.made_local) }),
+      el('td', { text: text(r.run_label) }), el('td', { text: text(r.headline) }),
+    ])));
+    const q = (document.getElementById('call-search').value || '').trim().toLowerCase();
+    const list = rows('calls_log').filter((r) => !q || [r.asset, r.horizon, r.bias, r.confidence, r.made_local].join(' ').toLowerCase().includes(q)).slice(0, 400);
+    const ct = document.querySelector('#calls-table tbody');
+    ct.replaceChildren(...list.map((r) => {
+      const res = r.correct === true || r.correct === 'true' ? 'right' : r.correct === false || r.correct === 'false' ? 'wrong' : r.status === 'open' ? 'open' : '–';
+      const inv = r.invalidated === true || r.invalidated === 'true' ? 'yes' : r.invalidated === false || r.invalidated === 'false' ? 'no' : '–';
+      const mv = num(r.ret_pct);
+      return el('tr', { 'data-key': r.id }, [
+        el('td', { cls: 'hide-sm', text: r.id }), el('td', { text: text(r.made_local) }), el('td', { text: r.asset }), el('td', { text: r.horizon }),
+        el('td', { cls: text(r.bias), text: text(r.bias) }), el('td', { text: text(r.confidence) || '–' }), el('td', { cls: 'num', text: pct(r.p_up) }),
+        el('td', { cls: 'num', text: d3.format(',')(num(r.ref_price)) }),
+        el('td', { cls: 'num', text: r.close_price == null ? '—' : d3.format(',')(num(r.close_price)) }),
+        el('td', { cls: 'num ' + (mv > 0 ? 'up' : mv < 0 ? 'down' : ''), text: mv === null ? '—' : chg(mv) }),
+        el('td', { cls: res === 'right' ? 'up' : res === 'wrong' ? 'down' : 'muted', text: res }),
+        el('td', { cls: 'hide-sm', text: inv }),
+      ]);
+    }));
+  }
+
+  window.mbDraw = () => {
+    const page = window.mbPage;
+    if (page === 'today') window.mbDrawToday();
+    else if (page === 'scorecard') drawScorecard();
+    else if (page === 'history') drawHistory();
+  };
+  dash.onData(() => window.mbDraw());
+
+  const named = (location.hash || '').slice(1);
+  if (['scorecard', 'history', 'method'].includes(named)) window.mbShow(named);
+</script>
