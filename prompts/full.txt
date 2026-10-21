@@ -13,6 +13,13 @@ pip install --break-system-packages -q -r code/requirements-run.txt
 ```
 (If `~/mb` already exists from an earlier run in this session, use a new folder name instead.)
 
+## 1b. Start a fresh price snapshot
+Load the add_repo tool (ToolSearch `select:mcp__claude-code-remote__add_repo`) and call it with owner `KimvingZ`, repo `market-brief`, access `push`. You don't need to clone or register it, whatever its reply suggests. Then run:
+```bash
+gh api -X POST repos/KimvingZ/market-brief/actions/workflows/snapshot.yml/dispatches -f ref=main -f "inputs[mode]=auto"
+```
+This starts the price job on GitHub; step 3 waits for its result. If either call fails, note it and carry on: the price job also runs on its own timer.
+
 ## 2. Get the call log from the dashboard
 Load the ArtifactData tool with ToolSearch (`select:ArtifactData`). Then:
 - ArtifactData `get` collection `datasets`, doc `ledger` and doc `brief`, url above. Note each document's `version` and its `source.url` (`/_blob/<asset id>`).
