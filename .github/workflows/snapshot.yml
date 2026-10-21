@@ -1,0 +1,65 @@
+name: snapshot
+
+# Every 30 minutes: fetch prices, compute indicators, levels and base rates,
+# and overwrite the `data` branch with the result. Claude's scheduled runs read
+# that branch. The first run after the crypto daily close (00:05 UTC) refetches
+# full history; the others only add recent bars.
+
+on:
+  schedule:
+    - cron: "5,35 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "auto, full or quick"
+        required: false
+        default: auto
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Fetch previous data
+        run: |
+          mkdir -p prev
+          if git ls-remote --exit-code --heads origin data >/dev/null 2>&1; then
+            git fetch --depth 1 origin data
+            git archive origin/data | tar -x -C prev
+          fi
+
+      - name: Build snapshot
+        env:
+          MODE: ${{ github.event.inputs.mode || 'auto' }}
+        run: python -m brief.snapshot --prev prev --out out --mode "$MODE"
+
+      - name: Publish to the data branch
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          cd out
+          git init -q -b data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "snapshot $(jq -r .generated_at snapshot.json) ($(jq -r .mode snapshot.json))"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${REPO}.git" data:data
+
+      - name: Status
+        if: always()
+        run: cat out/STATUS.md >> "$GITHUB_STEP_SUMMARY" || true

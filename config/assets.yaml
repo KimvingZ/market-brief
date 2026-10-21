@@ -1,0 +1,160 @@
+# Market Brief: assets and data sources.
+#
+# Each asset lists price sources in order of preference. The data job uses the
+# first one that returns fresh data, and keeps using it while it works, so an
+# asset's history never mixes two exchanges.
+#
+# calendar: when a daily bar is complete
+#   crypto     -> 00:00 UTC (Phnom Penh 07:00)
+#   us_equity  -> 16:00 New York
+#   cme        -> 17:00 New York (gold and oil futures)
+#
+# Horizons are counted in daily bars: crypto trades every day, the others on
+# weekdays only.
+
+display_timezone: Asia/Phnom_Penh
+
+horizons:
+  crypto:  {today: 1, short: 7, long: 30}
+  default: {today: 1, short: 5, long: 21}
+
+history:
+  daily_years: 10      # base rates use up to this much daily history
+  hourly_days: 365     # session statistics use up to this much hourly history
+
+assets:
+  # ---------------- crypto ----------------
+  - id: BTC
+    name: Bitcoin
+    group: crypto
+    calendar: crypto
+    calls: true
+    sources:
+      - {provider: bitget_futures, symbol: BTCUSDT, label: "Bitget BTCUSDT perpetual"}
+      - {provider: coinbase, symbol: BTC-USD, label: "Coinbase BTC-USD spot"}
+      - {provider: hyperliquid, symbol: BTC, label: "Hyperliquid BTC perpetual"}
+      - {provider: kraken, symbol: XBTUSD, label: "Kraken XBT/USD spot"}
+    derivatives:
+      - {provider: bitget_futures, symbol: BTCUSDT}
+      - {provider: hyperliquid, symbol: BTC}
+
+  - id: ETH
+    name: Ethereum
+    group: crypto
+    calendar: crypto
+    calls: true
+    sources:
+      - {provider: bitget_futures, symbol: ETHUSDT, label: "Bitget ETHUSDT perpetual"}
+      - {provider: coinbase, symbol: ETH-USD, label: "Coinbase ETH-USD spot"}
+      - {provider: hyperliquid, symbol: ETH, label: "Hyperliquid ETH perpetual"}
+      - {provider: kraken, symbol: ETHUSD, label: "Kraken ETH/USD spot"}
+    derivatives:
+      - {provider: bitget_futures, symbol: ETHUSDT}
+      - {provider: hyperliquid, symbol: ETH}
+
+  - id: SOL
+    name: Solana
+    group: crypto
+    calendar: crypto
+    calls: true
+    sources:
+      - {provider: bitget_futures, symbol: SOLUSDT, label: "Bitget SOLUSDT perpetual"}
+      - {provider: coinbase, symbol: SOL-USD, label: "Coinbase SOL-USD spot"}
+      - {provider: hyperliquid, symbol: SOL, label: "Hyperliquid SOL perpetual"}
+      - {provider: kraken, symbol: SOLUSD, label: "Kraken SOL/USD spot"}
+    derivatives:
+      - {provider: bitget_futures, symbol: SOLUSDT}
+      - {provider: hyperliquid, symbol: SOL}
+
+  - id: ZEC
+    name: Zcash
+    group: crypto
+    calendar: crypto
+    calls: true
+    sources:
+      - {provider: bitget_futures, symbol: ZECUSDT, label: "Bitget ZECUSDT perpetual"}
+      - {provider: coinbase, symbol: ZEC-USD, label: "Coinbase ZEC-USD spot"}
+      - {provider: hyperliquid, symbol: ZEC, label: "Hyperliquid ZEC perpetual"}
+      - {provider: kraken, symbol: ZECUSD, label: "Kraken ZEC/USD spot"}
+    derivatives:
+      - {provider: bitget_futures, symbol: ZECUSDT}
+      - {provider: hyperliquid, symbol: ZEC}
+
+  - id: AAVE
+    name: Aave
+    group: crypto
+    calendar: crypto
+    calls: true
+    sources:
+      - {provider: bitget_futures, symbol: AAVEUSDT, label: "Bitget AAVEUSDT perpetual"}
+      - {provider: coinbase, symbol: AAVE-USD, label: "Coinbase AAVE-USD spot"}
+      - {provider: hyperliquid, symbol: AAVE, label: "Hyperliquid AAVE perpetual"}
+      - {provider: kraken, symbol: AAVEUSD, label: "Kraken AAVE/USD spot"}
+    derivatives:
+      - {provider: bitget_futures, symbol: AAVEUSDT}
+      - {provider: hyperliquid, symbol: AAVE}
+
+  - id: HYPE
+    name: Hyperliquid
+    group: crypto
+    calendar: crypto
+    calls: true
+    sources:
+      - {provider: bitget_futures, symbol: HYPEUSDT, label: "Bitget HYPEUSDT perpetual"}
+      - {provider: hyperliquid, symbol: HYPE, label: "Hyperliquid HYPE perpetual"}
+      - {provider: coinbase, symbol: HYPE-USD, label: "Coinbase HYPE-USD spot"}
+      - {provider: kraken, symbol: HYPEUSD, label: "Kraken HYPE/USD spot"}
+    derivatives:
+      - {provider: bitget_futures, symbol: HYPEUSDT}
+      - {provider: hyperliquid, symbol: HYPE}
+
+  # ---------------- commodities ----------------
+  - id: XAU
+    name: Gold
+    group: commodity
+    calendar: cme
+    calls: true
+    sources:
+      - {provider: yahoo, symbol: "GC=F", label: "COMEX gold futures, front month"}
+      - {provider: stooq, symbol: gc.f, label: "COMEX gold futures, front month (daily only)"}
+
+  - id: CL
+    name: WTI crude oil
+    group: commodity
+    calendar: cme
+    calls: true
+    sources:
+      - {provider: yahoo, symbol: "CL=F", label: "NYMEX WTI futures, front month"}
+      - {provider: stooq, symbol: cl.f, label: "NYMEX WTI futures, front month (daily only)"}
+
+  # ---------------- US stocks: AI chips ----------------
+  - {id: NVDA, name: Nvidia, group: ai_chips, calendar: us_equity, calls: true,
+     sources: [{provider: yahoo, symbol: NVDA, label: "Nasdaq NVDA"}, {provider: stooq, symbol: nvda.us, label: "NVDA (daily only)"}]}
+  - {id: AMD, name: AMD, group: ai_chips, calendar: us_equity, calls: true,
+     sources: [{provider: yahoo, symbol: AMD, label: "Nasdaq AMD"}, {provider: stooq, symbol: amd.us, label: "AMD (daily only)"}]}
+  - {id: AVGO, name: Broadcom, group: ai_chips, calendar: us_equity, calls: true,
+     sources: [{provider: yahoo, symbol: AVGO, label: "Nasdaq AVGO"}, {provider: stooq, symbol: avgo.us, label: "AVGO (daily only)"}]}
+  - {id: TSM, name: TSMC, group: ai_chips, calendar: us_equity, calls: true,
+     sources: [{provider: yahoo, symbol: TSM, label: "NYSE TSM (ADR)"}, {provider: stooq, symbol: tsm.us, label: "TSM (daily only)"}]}
+
+  # ---------------- US stocks: memory and storage ----------------
+  - {id: MU, name: Micron, group: memory, calendar: us_equity, calls: true,
+     sources: [{provider: yahoo, symbol: MU, label: "Nasdaq MU"}, {provider: stooq, symbol: mu.us, label: "MU (daily only)"}]}
+  - {id: SNDK, name: SanDisk, group: memory, calendar: us_equity, calls: true,
+     sources: [{provider: yahoo, symbol: SNDK, label: "Nasdaq SNDK"}, {provider: stooq, symbol: sndk.us, label: "SNDK (daily only)"}]}
+  - {id: WDC, name: Western Digital, group: memory, calendar: us_equity, calls: true,
+     sources: [{provider: yahoo, symbol: WDC, label: "Nasdaq WDC"}, {provider: stooq, symbol: wdc.us, label: "WDC (daily only)"}]}
+  - {id: STX, name: Seagate, group: memory, calendar: us_equity, calls: true,
+     sources: [{provider: yahoo, symbol: STX, label: "Nasdaq STX"}, {provider: stooq, symbol: stx.us, label: "STX (daily only)"}]}
+
+  # ---------------- context only (no calls) ----------------
+  - {id: SPY, name: "S&P 500 ETF", group: context, calendar: us_equity, calls: false,
+     sources: [{provider: yahoo, symbol: SPY, label: "NYSE Arca SPY"}, {provider: stooq, symbol: spy.us, label: "SPY (daily only)"}]}
+  - {id: QQQ, name: "Nasdaq 100 ETF", group: context, calendar: us_equity, calls: false,
+     sources: [{provider: yahoo, symbol: QQQ, label: "Nasdaq QQQ"}, {provider: stooq, symbol: qqq.us, label: "QQQ (daily only)"}]}
+  - {id: SMH, name: "Semiconductor ETF", group: context, calendar: us_equity, calls: false,
+     sources: [{provider: yahoo, symbol: SMH, label: "Nasdaq SMH"}, {provider: stooq, symbol: smh.us, label: "SMH (daily only)"}]}
+  - {id: DXY, name: "US dollar index", group: context, calendar: cme, calls: false,
+     sources: [{provider: yahoo, symbol: "DX-Y.NYB", label: "ICE US dollar index"}, {provider: stooq, symbol: dx.f, label: "US dollar index futures (daily only)"}]}
+  - {id: US10Y, name: "US 10-year yield", group: context, calendar: us_equity, calls: false, unit: percent,
+     sources: [{provider: yahoo, symbol: "^TNX", label: "CBOE 10-year Treasury yield"}, {provider: stooq, symbol: 10usy.b, label: "US 10-year yield (daily only)"}]}

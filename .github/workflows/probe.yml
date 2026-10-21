@@ -1,0 +1,38 @@
+name: probe
+
+# Run by hand: checks which price sources answer from GitHub's servers and
+# writes the result to the `probe` branch (probe/report.md).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/probe_sources.py --out probe
+      - name: Summary
+        if: always()
+        run: cat probe/report.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Publish to the probe branch
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          cd probe
+          git init -q -b probe
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "probe $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${REPO}.git" probe:probe
