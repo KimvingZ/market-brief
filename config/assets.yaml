@@ -115,6 +115,7 @@ assets:
     calendar: cme
     calls: true
     sources:
+      - {provider: yfinance, symbol: "GC=F", label: "COMEX gold futures, front month"}
       - {provider: yahoo, symbol: "GC=F", label: "COMEX gold futures, front month"}
       - {provider: stooq, symbol: gc.f, label: "COMEX gold futures, front month (daily only)"}
 
@@ -124,37 +125,38 @@ assets:
     calendar: cme
     calls: true
     sources:
+      - {provider: yfinance, symbol: "CL=F", label: "NYMEX WTI futures, front month"}
       - {provider: yahoo, symbol: "CL=F", label: "NYMEX WTI futures, front month"}
       - {provider: stooq, symbol: cl.f, label: "NYMEX WTI futures, front month (daily only)"}
 
   # ---------------- US stocks: AI chips ----------------
   - {id: NVDA, name: Nvidia, group: ai_chips, calendar: us_equity, calls: true,
-     sources: [{provider: yahoo, symbol: NVDA, label: "Nasdaq NVDA"}, {provider: stooq, symbol: nvda.us, label: "NVDA (daily only)"}]}
+     sources: [{provider: yfinance, symbol: NVDA, label: "Nasdaq NVDA"}, {provider: yahoo, symbol: NVDA, label: "Nasdaq NVDA"}, {provider: stooq, symbol: nvda.us, label: "NVDA (daily only)"}]}
   - {id: AMD, name: AMD, group: ai_chips, calendar: us_equity, calls: true,
-     sources: [{provider: yahoo, symbol: AMD, label: "Nasdaq AMD"}, {provider: stooq, symbol: amd.us, label: "AMD (daily only)"}]}
+     sources: [{provider: yfinance, symbol: AMD, label: "Nasdaq AMD"}, {provider: yahoo, symbol: AMD, label: "Nasdaq AMD"}, {provider: stooq, symbol: amd.us, label: "AMD (daily only)"}]}
   - {id: AVGO, name: Broadcom, group: ai_chips, calendar: us_equity, calls: true,
-     sources: [{provider: yahoo, symbol: AVGO, label: "Nasdaq AVGO"}, {provider: stooq, symbol: avgo.us, label: "AVGO (daily only)"}]}
+     sources: [{provider: yfinance, symbol: AVGO, label: "Nasdaq AVGO"}, {provider: yahoo, symbol: AVGO, label: "Nasdaq AVGO"}, {provider: stooq, symbol: avgo.us, label: "AVGO (daily only)"}]}
   - {id: TSM, name: TSMC, group: ai_chips, calendar: us_equity, calls: true,
-     sources: [{provider: yahoo, symbol: TSM, label: "NYSE TSM (ADR)"}, {provider: stooq, symbol: tsm.us, label: "TSM (daily only)"}]}
+     sources: [{provider: yfinance, symbol: TSM, label: "NYSE TSM (ADR)"}, {provider: yahoo, symbol: TSM, label: "NYSE TSM (ADR)"}, {provider: stooq, symbol: tsm.us, label: "TSM (daily only)"}]}
 
   # ---------------- US stocks: memory and storage ----------------
   - {id: MU, name: Micron, group: memory, calendar: us_equity, calls: true,
-     sources: [{provider: yahoo, symbol: MU, label: "Nasdaq MU"}, {provider: stooq, symbol: mu.us, label: "MU (daily only)"}]}
+     sources: [{provider: yfinance, symbol: MU, label: "Nasdaq MU"}, {provider: yahoo, symbol: MU, label: "Nasdaq MU"}, {provider: stooq, symbol: mu.us, label: "MU (daily only)"}]}
   - {id: SNDK, name: SanDisk, group: memory, calendar: us_equity, calls: true,
-     sources: [{provider: yahoo, symbol: SNDK, label: "Nasdaq SNDK"}, {provider: stooq, symbol: sndk.us, label: "SNDK (daily only)"}]}
+     sources: [{provider: yfinance, symbol: SNDK, label: "Nasdaq SNDK"}, {provider: yahoo, symbol: SNDK, label: "Nasdaq SNDK"}, {provider: stooq, symbol: sndk.us, label: "SNDK (daily only)"}]}
   - {id: WDC, name: Western Digital, group: memory, calendar: us_equity, calls: true,
-     sources: [{provider: yahoo, symbol: WDC, label: "Nasdaq WDC"}, {provider: stooq, symbol: wdc.us, label: "WDC (daily only)"}]}
+     sources: [{provider: yfinance, symbol: WDC, label: "Nasdaq WDC"}, {provider: yahoo, symbol: WDC, label: "Nasdaq WDC"}, {provider: stooq, symbol: wdc.us, label: "WDC (daily only)"}]}
   - {id: STX, name: Seagate, group: memory, calendar: us_equity, calls: true,
-     sources: [{provider: yahoo, symbol: STX, label: "Nasdaq STX"}, {provider: stooq, symbol: stx.us, label: "STX (daily only)"}]}
+     sources: [{provider: yfinance, symbol: STX, label: "Nasdaq STX"}, {provider: yahoo, symbol: STX, label: "Nasdaq STX"}, {provider: stooq, symbol: stx.us, label: "STX (daily only)"}]}
 
   # ---------------- context only (no calls) ----------------
   - {id: SPY, name: "S&P 500 ETF", group: context, calendar: us_equity, calls: false,
-     sources: [{provider: yahoo, symbol: SPY, label: "NYSE Arca SPY"}, {provider: stooq, symbol: spy.us, label: "SPY (daily only)"}]}
+     sources: [{provider: yfinance, symbol: SPY, label: "NYSE Arca SPY"}, {provider: yahoo, symbol: SPY, label: "NYSE Arca SPY"}, {provider: stooq, symbol: spy.us, label: "SPY (daily only)"}]}
   - {id: QQQ, name: "Nasdaq 100 ETF", group: context, calendar: us_equity, calls: false,
-     sources: [{provider: yahoo, symbol: QQQ, label: "Nasdaq QQQ"}, {provider: stooq, symbol: qqq.us, label: "QQQ (daily only)"}]}
+     sources: [{provider: yfinance, symbol: QQQ, label: "Nasdaq QQQ"}, {provider: yahoo, symbol: QQQ, label: "Nasdaq QQQ"}, {provider: stooq, symbol: qqq.us, label: "QQQ (daily only)"}]}
   - {id: SMH, name: "Semiconductor ETF", group: context, calendar: us_equity, calls: false,
-     sources: [{provider: yahoo, symbol: SMH, label: "Nasdaq SMH"}, {provider: stooq, symbol: smh.us, label: "SMH (daily only)"}]}
+     sources: [{provider: yfinance, symbol: SMH, label: "Nasdaq SMH"}, {provider: yahoo, symbol: SMH, label: "Nasdaq SMH"}, {provider: stooq, symbol: smh.us, label: "SMH (daily only)"}]}
   - {id: DXY, name: "US dollar index", group: context, calendar: cme, calls: false,
-     sources: [{provider: yahoo, symbol: "DX-Y.NYB", label: "ICE US dollar index"}, {provider: stooq, symbol: dx.f, label: "US dollar index futures (daily only)"}]}
+     sources: [{provider: yfinance, symbol: "DX-Y.NYB", label: "ICE US dollar index"}, {provider: yahoo, symbol: "DX-Y.NYB", label: "ICE US dollar index"}, {provider: stooq, symbol: dx.f, label: "US dollar index futures (daily only)"}]}
   - {id: US10Y, name: "US 10-year yield", group: context, calendar: us_equity, calls: false, unit: percent,
-     sources: [{provider: yahoo, symbol: "^TNX", label: "CBOE 10-year Treasury yield"}, {provider: stooq, symbol: 10usy.b, label: "US 10-year yield (daily only)"}]}
+     sources: [{provider: yfinance, symbol: "^TNX", label: "CBOE 10-year Treasury yield"}, {provider: yahoo, symbol: "^TNX", label: "CBOE 10-year Treasury yield"}, {provider: stooq, symbol: 10usy.b, label: "US 10-year yield (daily only)"}]}

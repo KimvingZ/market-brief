@@ -220,6 +220,45 @@ def fetch_yahoo(symbol: str, interval: str, start: datetime, end: datetime, prep
 
 
 # --------------------------------------------------------------------------
+# Yahoo Finance through the yfinance library (browser-like requests, which
+# Yahoo blocks less than plain HTTP clients)
+# --------------------------------------------------------------------------
+def fetch_yfinance(symbol: str, interval: str, start: datetime, end: datetime) -> pd.DataFrame:
+    try:
+        import yfinance as yf
+    except ImportError as exc:  # pragma: no cover
+        raise FetchError("yfinance is not installed") from exc
+    try:
+        t = yf.Ticker(symbol)
+        if interval == "1d":
+            df = t.history(start=start.date().isoformat(), end=(end + timedelta(days=1)).date().isoformat(),
+                           interval="1d", auto_adjust=False, actions=False, raise_errors=True, timeout=20)
+        else:
+            s = max(start, end - timedelta(days=729))
+            df = t.history(start=s, end=end, interval="60m", prepost=True, auto_adjust=False,
+                           actions=False, raise_errors=True, timeout=20)
+    except Exception as exc:  # yfinance raises many types
+        raise FetchError(f"yfinance {symbol}: {type(exc).__name__}: {str(exc)[:150]}") from exc
+    if df is None or df.empty:
+        raise FetchError(f"yfinance returned no candles for {symbol}")
+    df = df.rename(columns=str.lower)
+    df = df[[c for c in COLUMNS if c in df.columns]].astype("float64")
+    if "volume" not in df:
+        df["volume"] = 0.0
+    idx = df.index
+    if interval == "1d":
+        dates = idx.date
+        df.index = pd.DatetimeIndex(pd.to_datetime(dates)).tz_localize(UTC)
+    else:
+        df.index = idx.tz_convert(UTC) if idx.tz is not None else idx.tz_localize(UTC)
+    df = df.dropna(subset=["open", "high", "low", "close"])
+    df["volume"] = df["volume"].fillna(0.0)
+    df = df[~df.index.duplicated(keep="last")].sort_index()
+    df.index.name = None
+    return _clip(df[COLUMNS], start, end + timedelta(days=1))
+
+
+# --------------------------------------------------------------------------
 # Stooq (daily CSV only)
 # --------------------------------------------------------------------------
 def fetch_stooq(symbol: str, interval: str, start: datetime, end: datetime) -> pd.DataFrame:
@@ -265,7 +304,9 @@ def fetch_candles(provider: str, symbol: str, interval: str, start: datetime, en
     if provider == "hyperliquid":
         return fetch_hyperliquid(symbol, interval, start, end)
     if provider == "yahoo":
-        return fetch_yahoo(symbol, interval, start, end, prepost=False)
+        return fetch_yahoo(symbol, interval, start, end, prepost=interval == "1h")
+    if provider == "yfinance":
+        return fetch_yfinance(symbol, interval, start, end)
     if provider == "stooq":
         return fetch_stooq(symbol, interval, start, end)
     raise ValueError(f"unknown provider {provider!r}")

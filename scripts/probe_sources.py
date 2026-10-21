@@ -31,15 +31,17 @@ from brief.sources import (  # noqa: E402
 from brief.timeutil import iso, utcnow  # noqa: E402
 
 EXTRA = [
-    # spot-gold candidates: spot or a token that tracks spot
-    {"asset": "XAU (spot candidates)", "provider": "stooq", "symbol": "xauusd"},
-    {"asset": "XAU (spot candidates)", "provider": "yahoo", "symbol": "XAUUSD=X"},
-    {"asset": "XAU (spot candidates)", "provider": "bitget_futures", "symbol": "XAUTUSDT"},
-    {"asset": "XAU (spot candidates)", "provider": "bitget_futures", "symbol": "PAXGUSDT"},
-    {"asset": "XAU (spot candidates)", "provider": "coinbase", "symbol": "PAXG-USD"},
-    {"asset": "XAU (spot candidates)", "provider": "hyperliquid", "symbol": "PAXG"},
-    # Bitget spot, in case futures are blocked but spot is not
-    {"asset": "BTC (Bitget spot)", "provider": "bitget_spot", "symbol": "BTCUSDT"},
+    # spot-gold candidates (tokens that track spot gold), with full history depth
+    {"asset": "XAU (spot candidates)", "provider": "bitget_futures", "symbol": "XAUTUSDT", "deep": True},
+    {"asset": "XAU (spot candidates)", "provider": "bitget_futures", "symbol": "PAXGUSDT", "deep": True},
+    {"asset": "XAU (spot candidates)", "provider": "coinbase", "symbol": "PAXG-USD", "deep": True},
+    {"asset": "XAU (spot candidates)", "provider": "hyperliquid", "symbol": "PAXG", "deep": True},
+    {"asset": "XAU (spot candidates)", "provider": "yfinance", "symbol": "XAUUSD=X", "deep": True},
+    # history depth on the main sources for the short-history coins
+    {"asset": "HYPE depth", "provider": "bitget_futures", "symbol": "HYPEUSDT", "deep": True},
+    {"asset": "ZEC depth", "provider": "bitget_futures", "symbol": "ZECUSDT", "deep": True},
+    {"asset": "SOL depth", "provider": "bitget_futures", "symbol": "SOLUSDT", "deep": True},
+    {"asset": "NVDA depth", "provider": "yfinance", "symbol": "NVDA", "deep": True},
 ]
 
 
@@ -97,7 +99,7 @@ def main() -> int:
                 results["derivatives"].append({"asset": a["id"], "provider": d["provider"], "ok": False,
                                                "error": str(exc)[:200]})
     for x in EXTRA:
-        r = probe_candles(x["provider"], x["symbol"], False)
+        r = probe_candles(x["provider"], x["symbol"], bool(x.get("deep")))
         r["asset"] = x["asset"]
         results["candles"].append(r)
     try:
