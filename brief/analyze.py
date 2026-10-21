@@ -11,6 +11,7 @@ import pandas as pd
 from . import indicators as ti
 from .base_rates import conditional, gap_stats, price_asof, session_continuation
 from .levels import key_levels, nearest_beyond, price_decimals, rnd
+from .rolls import back_adjust, detect, recent
 from .setup import INVALIDATION_BAND, decide, ta_signals
 from .timeutil import (
     bar_close_time,
@@ -98,6 +99,20 @@ def analyze_asset(acfg: dict, daily_raw: pd.DataFrame, hourly_raw: pd.DataFrame 
         "id": acfg["id"], "name": acfg["name"], "group": acfg["group"], "calendar": cal,
         "calls": bool(acfg.get("calls")), "source": source, "status": "ok", "notes": [],
     }
+    # futures: remove contract-roll gaps first (on the raw bars, the bar in progress included)
+    roll_info = []
+    if acfg.get("rolls") and daily_raw is not None and len(daily_raw) > 1:
+        rc = acfg["rolls"]
+        rolls = detect(daily_raw, rc["window"], float(rc["threshold"]))
+        if rolls:
+            daily_raw, hourly_raw = back_adjust(daily_raw, hourly_raw, rolls)
+            roll_info = recent(rolls, (now - timedelta(days=120)).date())
+            for r in roll_info:
+                if r["date"] >= (now - timedelta(days=10)).date().isoformat():
+                    entry["notes"].append(f"futures contract rolled on {r['date']} "
+                                          f"({r['change_pct']:+.1f}% gap removed from history)")
+    entry["rolls"] = roll_info
+
     daily, partial = split_daily(daily_raw, cal, now)
     if len(daily) < 30:
         entry["status"] = "missing"
@@ -277,6 +292,7 @@ def analyze_asset(acfg: dict, daily_raw: pd.DataFrame, hourly_raw: pd.DataFrame 
     candles = {
         "calendar": cal,
         "decimals": price_decimals(ref),
+        "rolls": roll_info,
         "daily": [[ts.date().isoformat(), *(rnd(float(r[c]), ref) for c in ("open", "high", "low", "close")), _f(r["volume"], 2)]
                   for ts, r in keep_d.iterrows()],
         "daily_partial": ([partial.name.date().isoformat(), *(rnd(float(partial[c]), ref) for c in ("open", "high", "low", "close"))]

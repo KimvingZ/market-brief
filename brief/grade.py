@@ -109,10 +109,18 @@ def grade_call(row: dict, candles: dict, now: datetime) -> dict:
     """Return the row, graded if its window has closed and the data is there."""
     if row.get("kind") != "call" or row.get("status") != "open":
         return row
+    c = candles.get(row["asset"])
+    # a futures contract roll after the call was made: its prices are no longer comparable
+    for r in (c or {}).get("rolls") or []:
+        if row["horizon"] == "session":
+            rolled = r.get("hourly_cut") and parse_ts(r["hourly_cut"]) > parse_ts(row["ref_time"])
+        else:
+            rolled = to_date(r["date"]) > to_date(row["ref_bar"])
+        if rolled:
+            return dict(row, status="void", graded_at=iso(now), note=f"futures contract roll on {r['date']}")
     end = parse_ts(row["window_end"])
     if now < end + timedelta(minutes=5):
         return row
-    c = candles.get(row["asset"])
     close = lo = hi = None
     if c:
         if row["horizon"] == "session":

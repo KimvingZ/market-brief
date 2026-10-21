@@ -251,6 +251,14 @@ def cmd_finish(args) -> int:
         print(json.dumps(res, indent=1))
         return 1
     new_rows = rows_from_run(final, narrative, snapshot) + note_rows(final, narrative)
+    if args.trial:
+        # A run made by hand at an odd time: shown, but never scored, because a call
+        # made mid-candle already knows part of the move it is graded on.
+        for r in new_rows:
+            if r["kind"] == "call":
+                r.update(status="void", graded_at=final["made_at"], note="trial run, not scored")
+            elif r["kind"] == "run":
+                r["run_label"] = r["run_label"] + " (trial, not scored)"
     ledger = upsert(ledger, new_rows)
     pub = work / "pub"
     save_ledger(pub / "ledger.json", ledger)
@@ -279,6 +287,7 @@ def main(argv: list[str] | None = None) -> int:
     f = sub.add_parser("finish")
     f.add_argument("--data", required=True)
     f.add_argument("--work", required=True)
+    f.add_argument("--trial", action="store_true", help="record the calls but never score them")
     args = ap.parse_args(argv)
     return cmd_prepare(args) if args.cmd == "prepare" else cmd_finish(args)
 

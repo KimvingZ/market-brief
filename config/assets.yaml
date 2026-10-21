@@ -119,6 +119,7 @@ assets:
     # Futures give 25 years of clean weekday history. Spot-tracking tokens on
     # Bitget trade a little lower; the gap is shown so levels can be shifted.
     compare: {provider: bitget_futures, symbol: XAUTUSDT, label: "Bitget XAUT perpetual (tracks spot gold)"}
+    rolls: {window: bimonthly, threshold: 0.0035}
     sources:
       - {provider: yfinance, symbol: "GC=F", label: "COMEX gold futures, front month"}
       - {provider: yahoo, symbol: "GC=F", label: "COMEX gold futures, front month"}
@@ -129,6 +130,8 @@ assets:
     group: commodity
     calendar: cme
     calls: true
+    # The front-month contract changes around the 20th: history is back-adjusted.
+    rolls: {window: monthly, threshold: 0.01}
     sources:
       - {provider: yfinance, symbol: "CL=F", label: "NYMEX WTI futures, front month"}
       - {provider: yahoo, symbol: "CL=F", label: "NYMEX WTI futures, front month"}

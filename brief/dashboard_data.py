@@ -104,9 +104,11 @@ def build_bundle(snapshot: dict, candles: dict, draft: dict, narrative: dict, le
         banner.append("No price data for: " + ", ".join(missing) + ".")
     nrt, nt = next_run(made_at)
     fg = snapshot.get("fear_greed") or {}
+    run_row = next((r for r in ledger if r.get("kind") == "run" and r.get("id") == draft["run_id"]), {})
     rows.append({
         "kind": "meta", "run_id": draft["run_id"], "run_type": draft["run_type"],
-        "run_label": RUN_LABELS[draft["run_type"]], "made_at": draft["made_at"], "made_local": draft["made_local"],
+        "run_label": run_row.get("run_label") or RUN_LABELS[draft["run_type"]],
+        "made_at": draft["made_at"], "made_local": draft["made_local"],
         "headline": narrative.get("headline", ""), "overview": narrative.get("overview", ""),
         "data_generated_at": snapshot["generated_at"], "data_generated_local": local_label(gen),
         "data_age_min": age_min, "data_mode": snapshot.get("mode"), "banner": " ".join(banner),

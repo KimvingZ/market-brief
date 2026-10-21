@@ -395,6 +395,7 @@
       num(a[hz + '_inv']) !== null ? ' · wrong at ' : null,
       num(a[hz + '_inv']) !== null ? el('span', { ...mark('assets', hz + '_inv', w), text: price(a[hz + '_inv'], a.decimals) }) : null,
       res ? el('span', { cls: res === 'right' ? 'up' : 'down', text: ` · ${res}` }) : null,
+      text(a[hz + '_status']) === 'void' ? el('span', { cls: 'muted', text: ' · not scored' }) : null,
     ]);
     const why = [text(a[hz + '_reason'])];
     if (hz === 'session' && text(a.session_today_view) === 'flipped') why.push(`Turned against the morning call: ${text(a.session_flip)}`);
