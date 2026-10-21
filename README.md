@@ -166,3 +166,9 @@ python -m brief.run finish --data out --work work
 * **GitHub's scheduler** can run late, sometimes by 10 to 20 minutes. Each
   Claude run waits up to 15 minutes for fresh data, then reports with a
   "data delayed" banner rather than pretending.
+* **GitHub pauses scheduled workflows** in a public repository after 60 days
+  without activity. If the dashboard keeps saying "data delayed", open the
+  repository's Actions tab and re-enable the `snapshot` workflow.
+* **Futures rolls**: WTI rolls around the 20th of each month and gold every
+  two months. History is adjusted for the switch, and calls that span a roll
+  are voided rather than graded across two contracts.
