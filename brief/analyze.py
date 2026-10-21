@@ -259,15 +259,18 @@ def analyze_asset(acfg: dict, daily_raw: pd.DataFrame, hourly_raw: pd.DataFrame 
         if dec["lean"] in ("long", "short"):
             lo_m, hi_m = INVALIDATION_BAND[name]
             side = "below" if dec["lean"] == "long" else "above"
-            inv = nearest_beyond(level_list, ref_close, side, lo_m * atr_d, hi_m * atr_d) or \
-                nearest_beyond(level_list, ref_close, side, 0.5 * lo_m * atr_d, 1.5 * hi_m * atr_d)
+            inv = nearest_beyond(level_list, live, side, lo_m * atr_d, hi_m * atr_d) or \
+                nearest_beyond(level_list, live, side, 0.5 * lo_m * atr_d, 1.5 * hi_m * atr_d)
             if inv is None:
                 dec = {"lean": "neutral", "max_conf": "low", "allowed": ["neutral"], "news_only": ["long", "short"],
                        "why": "no nearby level to define risk"}
+        # Calls are measured from the latest price, not the last daily close: a move that
+        # happened between the close and the report (after-hours earnings, the first hour of
+        # a crypto day) is already known when the report is written, so it must not count.
         hz_out[name] = {
             "h_bars": h,
-            "ref_price": rnd(ref_close, ref),
-            "ref_time": iso(ref_time),
+            "ref_price": rnd(live, ref),
+            "ref_time": iso(live_time),
             "ref_bar": last_date.isoformat(),
             "window_end": iso(bar_close_time(cal, end_date)),
             "end_bar": end_date.isoformat(),

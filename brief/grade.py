@@ -140,7 +140,7 @@ def grade_call(row: dict, candles: dict, now: datetime) -> dict:
                 close = target[4]
                 lo, hi = min(b[3] for b in after[:h]), max(b[2] for b in after[:h])
                 if h == 1:
-                    start = parse_ts(row["ref_time"])
+                    start = parse_ts(row["ref_time"]).replace(minute=0, second=0)
                     stop = bar_close_time(cal, to_date(target[0]))
                     hb = [b for b in _hourly(c) if start <= b[0] < stop]
                     if len(hb) >= 0.8 * (stop - start).total_seconds() / 3600 and cal == "crypto":

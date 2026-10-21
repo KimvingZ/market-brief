@@ -61,6 +61,10 @@ def test_full_run_calls(chain):
     bundle = load(chain / "w1/pub/bundle.json")["rows"]
     kinds = {r["kind"] for r in bundle}
     assert {"meta", "asset", "level", "candle", "score", "calib"} <= kinds
+    # calls are measured from the latest price, not the last daily close
+    snap = load(chain / "data/snapshot.json")
+    for c in draft["calls"]:
+        assert c["locked"]["ref_price"] == snap["assets"][c["locked"]["asset"]]["price"]["last"]
 
 
 def test_session_updates(chain):
