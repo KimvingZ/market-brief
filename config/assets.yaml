@@ -71,9 +71,11 @@ assets:
     group: crypto
     calendar: crypto
     calls: true
+    # Coinbase first: Bitget's ZEC perpetual only has data from Oct 2025, too short
+    # for base rates. The two prices differ by a few hundredths of a percent.
     sources:
-      - {provider: bitget_futures, symbol: ZECUSDT, label: "Bitget ZECUSDT perpetual"}
       - {provider: coinbase, symbol: ZEC-USD, label: "Coinbase ZEC-USD spot"}
+      - {provider: bitget_futures, symbol: ZECUSDT, label: "Bitget ZECUSDT perpetual"}
       - {provider: hyperliquid, symbol: ZEC, label: "Hyperliquid ZEC perpetual"}
       - {provider: kraken, symbol: ZECUSD, label: "Kraken ZEC/USD spot"}
     derivatives:
@@ -114,6 +116,9 @@ assets:
     group: commodity
     calendar: cme
     calls: true
+    # Futures give 25 years of clean weekday history. Spot-tracking tokens on
+    # Bitget trade a little lower; the gap is shown so levels can be shifted.
+    compare: {provider: bitget_futures, symbol: XAUTUSDT, label: "Bitget XAUT perpetual (tracks spot gold)"}
     sources:
       - {provider: yfinance, symbol: "GC=F", label: "COMEX gold futures, front month"}
       - {provider: yahoo, symbol: "GC=F", label: "COMEX gold futures, front month"}

@@ -148,6 +148,9 @@ def build_bundle(snapshot: dict, candles: dict, draft: dict, narrative: dict, le
                         "deriv_source": dv.get("provider")})
             rel = e.get("relative") or {}
             row.update({"rel_vs": rel.get("vs"), "rel_5d": rel.get("pp_5d")})
+            cmp = e.get("compare") or {}
+            row.update({"compare_label": cmp.get("label"), "compare_price": cmp.get("price"),
+                        "compare_diff": cmp.get("diff")})
             lv = e["levels"]
             for side, key in (("sup", "supports"), ("res", "resistances")):
                 for j in range(2):

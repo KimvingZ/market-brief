@@ -25,6 +25,7 @@ import yaml
 
 from .analyze import analyze_asset
 from .http import FetchError
+from .levels import rnd
 from .sources import DAILY_ONLY, fetch_calendar, fetch_candles, fetch_derivatives, fetch_fear_greed
 from .timeutil import iso, last_bar_closed_by, local_label, parse_ts, trading_days_between, utcnow
 
@@ -235,6 +236,16 @@ def build(prev_dir: Path | None, out_dir: Path, mode: str = "auto", now: datetim
             errors.append(f"{aid} analysis failed: {type(exc).__name__}: {exc}")
             entry, cnd = {"id": aid, "name": acfg["name"], "group": acfg["group"], "calendar": acfg["calendar"],
                           "calls": bool(acfg.get("calls")), "status": "missing", "notes": ["analysis failed"]}, {}
+        if acfg.get("compare") and not offline and entry.get("status") == "ok":
+            cmp = acfg["compare"]
+            try:
+                h = fetch_candles(cmp["provider"], cmp["symbol"], "1h", now - timedelta(hours=6), now)
+                cp = float(h["close"].iloc[-1])
+                last = entry["price"]["last"]
+                entry["compare"] = {"label": cmp.get("label", cmp["symbol"]), "price": rnd(cp, last),
+                                    "diff": rnd(cp - last, last), "diff_pct": round((cp / last - 1) * 100, 2)}
+            except (FetchError, KeyError, ValueError, TypeError, IndexError) as exc:
+                errors.append(f"{aid} compare {cmp['provider']}: {exc}")
         assets[aid] = entry
         if cnd:
             candles[aid] = cnd

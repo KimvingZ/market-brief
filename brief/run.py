@@ -141,6 +141,10 @@ def digest(snapshot: dict, draft: dict, fresh: dict, graded_now: int) -> str:
             L.append(f"Derivatives ({dv['provider']}): funding {dv['funding_8h_pct']:+.4f}%/8h "
                      f"({dv['funding_apr_pct']:+.1f}%/yr) · open interest ${oi / 1e6:,.0f}M"
                      + (f" ({dv['oi_change_24h_pct']:+.1f}% 24h)" if dv.get("oi_change_24h_pct") is not None else ""))
+        if e.get("compare"):
+            cm = e["compare"]
+            L.append(f"Compare: {cm['label']} at {_fmt(cm['price'], dec)}, {cm['diff']:+,.{dec}f} against this price "
+                     f"(shift levels by that much for that market)")
         if e.get("relative") and e["relative"].get("pp_5d") is not None:
             L.append(f"Relative to {e['relative']['vs']} over 5 bars: {e['relative']['pp_5d']:+.1f} points")
         s = e.get("sessions")

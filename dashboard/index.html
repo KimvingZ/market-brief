@@ -439,6 +439,15 @@
           el('span', { cls: 'cap muted', text: ' 24h' }),
         ]),
       ]));
+      if (num(a.compare_price) !== null) {
+        card.append(el('p', { cls: 'cap muted' }, [
+          `${text(a.compare_label)}: `,
+          el('span', { ...mark('assets', 'compare_price', w), text: price(a.compare_price, a.decimals) }),
+          ' (',
+          el('span', { ...mark('assets', 'compare_diff', w), text: `${num(a.compare_diff) > 0 ? '+' : ''}${price(a.compare_diff, a.decimals)}` }),
+          ' against this chart: shift the levels below by that much on that market)',
+        ]));
+      }
       const chart = el('div', { cls: 'chart', 'data-source': 'candles assets' });
       card.append(chart);
       const calls = el('div', { cls: 'calls' });
