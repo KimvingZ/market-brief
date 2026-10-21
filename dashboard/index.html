@@ -317,13 +317,16 @@
     for (const [k, lab] of [['sup1', 'S1'], ['sup2', 'S2'], ['res1', 'R1'], ['res2', 'R2']]) {
       if (num(a[k]) !== null) lines.push({ y: num(a[k]), lab, kind: k.startsWith('sup') ? 'sup' : 'res' });
     }
-    if (num(a.today_inv) !== null) lines.push({ y: num(a.today_inv), lab: 'Wrong', kind: 'inv' });
+    if (num(a.today_inv) !== null) {
+      const same = lines.find((l) => l.y === num(a.today_inv));
+      if (same) { same.lab += ' · wrong'; same.kind = 'inv'; } else lines.push({ y: num(a.today_inv), lab: 'Wrong', kind: 'inv' });
+    }
     const lo = d3.min([...candles.map((c) => num(c.l)), ...lines.map((l) => l.y)]);
     const hi = d3.max([...candles.map((c) => num(c.h)), ...lines.map((l) => l.y)]);
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
       .attr('aria-label', `${a.name} daily prices with levels`);
     // measure the widest right-hand label to set the margin
-    const probe = svg.append('text').attr('font-size', 11).text(`Wrong ${fmt(hi)}`);
+    const probe = svg.append('text').attr('font-size', 11).text(`R2 · wrong ${fmt(hi)}`);
     const labW = probe.node().getComputedTextLength ? probe.node().getComputedTextLength() : 80;
     probe.remove();
     const m = { l: 4, r: Math.ceil(labW) + 10, t: 8, b: 18 };
