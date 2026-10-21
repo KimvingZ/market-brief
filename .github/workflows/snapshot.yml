@@ -10,14 +10,15 @@ name: snapshot
 # covered):
 #   07:35 Phnom Penh report (00:35 UTC)      -> 00:12, 00:22
 #   07:20 London update (06:20 or 07:20 UTC)  -> 06:12, 07:12 on weekdays
-#   08:47 New York update (12:47 or 13:47)    -> 12:38, 12:42, 13:38, 13:42 on weekdays
+#   08:47 New York update (12:47 or 13:47)    -> 12:41, 13:41 on weekdays
+# (all slots at least 5 minutes apart, GitHub's minimum)
 
 on:
   schedule:
     - cron: "5,35 * * * *"
     - cron: "12,22 0 * * *"
     - cron: "12 6,7 * * 1-5"
-    - cron: "38,42 12,13 * * 1-5"
+    - cron: "41 12,13 * * 1-5"
   workflow_dispatch:
     inputs:
       mode:
