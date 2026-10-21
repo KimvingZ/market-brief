@@ -178,3 +178,31 @@ def test_validator_session_flip_rules(chain):
     assert _errs(snap, f, narrative, ledger) == ""
     t["flip_trigger"] = "event:Imaginary Event"
     assert "no calendar event" in _errs(snap, f, narrative, ledger)
+
+
+# ------------------------------------------------------------------ stale data
+def test_stale_snapshot_makes_no_calls(day1, tmp_path):
+    """A snapshot from the day before: the full report and the session updates make no calls."""
+    base, _ = day1
+    data = base / "data"  # generated Wed 21 Oct 00:40 UTC
+    assert _prepare("full", data, None, tmp_path / "f", "2026-10-22T00:45:00Z") == 3  # stale: refused
+    assert runmod.main(["prepare", "--run", "full", "--data", str(data), "--work", str(tmp_path / "f"),
+                        "--now", "2026-10-22T00:45:00Z", "--allow-stale"]) == 0
+    draft = load(tmp_path / "f/draft.json")
+    assert draft["calls"] == []
+    assert {s["why"] for s in draft["skipped"]} == {"prices missed the latest daily close"}
+    assert runmod.main(["prepare", "--run", "ny", "--data", str(data), "--work", str(tmp_path / "n"),
+                        "--now", "2026-10-21T12:52:00Z", "--allow-stale"]) == 0
+    draft = load(tmp_path / "n/draft.json")
+    assert draft["calls"] == [] and all("min old" in s["why"] for s in draft["skipped"])
+
+
+def test_ny_session_needs_post_0830_data(day1, small_cfg, tmp_path):
+    base, _ = day1
+    build(base / "data3", tmp_path / "early", "auto", datetime(2026, 10, 21, 12, 20, tzinfo=UTC), offline=True,
+          cfg=small_cfg)  # 08:20 New York: before the data releases
+    assert runmod.main(["prepare", "--run", "ny", "--data", str(tmp_path / "early"), "--work", str(tmp_path / "w"),
+                        "--now", "2026-10-21T12:47:00Z", "--allow-stale"]) == 0
+    draft = load(tmp_path / "w/draft.json")
+    assert draft["calls"] == []
+    assert all(s["why"] == "prices are from before the 08:30 New York data" for s in draft["skipped"])

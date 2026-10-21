@@ -19,11 +19,52 @@ from datetime import datetime, timedelta
 
 from .levels import nearest_beyond, rnd
 from .setup import INVALIDATION_BAND, decide, ta_signals
-from .timeutil import iso, local_label, parse_ts, session_bounds
+from .timeutil import (
+    bar_close_time,
+    iso,
+    last_bar_closed_by,
+    local_label,
+    ny_time,
+    parse_ts,
+    session_bounds,
+    to_date,
+    trading_days_between,
+)
 
 RUN_TYPES = ("full", "london", "ny")
 RUN_LABELS = {"full": "Pre-Asia report", "london": "Pre-London update", "ny": "Pre-New York update"}
 DAILY_HORIZONS = ("today", "short", "long")
+SESSION_MAX_AGE = timedelta(minutes=40)
+
+
+def daily_data_problem(snapshot: dict, entry: dict, h: dict, now: datetime) -> str:
+    """Why a daily-horizon call can't be made from this snapshot at time `now`, or ''.
+
+    The snapshot must include the latest daily close (one missing weekday bar is
+    accepted only when the snapshot was taken well after that close, which
+    means it was a market holiday), and the call's window must still be open.
+    """
+    cal = entry["calendar"]
+    gen = parse_ts(snapshot["generated_at"])
+    expected = last_bar_closed_by(cal, now)
+    ref_bar = to_date(h["ref_bar"])
+    lag = trading_days_between(cal, ref_bar, expected)
+    holiday = cal != "crypto" and lag == 1 and gen >= bar_close_time(cal, expected) + timedelta(hours=3)
+    if lag > 0 and not holiday:
+        return "prices missed the latest daily close"
+    if parse_ts(h["window_end"]) <= now + timedelta(hours=1):
+        return "window already over"
+    return ""
+
+
+def session_data_problem(snapshot: dict, run_type: str, now: datetime) -> str:
+    """Why session calls can't be made from this snapshot at time `now`, or ''."""
+    gen = parse_ts(snapshot["generated_at"])
+    if now - gen > SESSION_MAX_AGE:
+        return f"prices are {int((now - gen).total_seconds() // 60)} min old"
+    if run_type == "ny" and gen < ny_time(now.date(), 8, 31):
+        return "prices are from before the 08:30 New York data"
+    return ""
 
 
 def run_id(run_type: str, made_at: datetime) -> str:
@@ -112,6 +153,10 @@ def build_template(snapshot: dict, run_type: str, made_at, ledger_rows: list[dic
                 if not h["eligible"]:
                     skipped.append({"asset": aid, "horizon": hz, "why": h["why_not"]})
                     continue
+                problem = daily_data_problem(snapshot, e, h, now)
+                if problem:
+                    skipped.append({"asset": aid, "horizon": hz, "why": problem})
+                    continue
                 inv = h["suggested_invalidation"]
                 locked = {
                     "asset": aid, "horizon": hz, "run_type": run_type, "run_id": rid,
@@ -129,6 +174,10 @@ def build_template(snapshot: dict, run_type: str, made_at, ledger_rows: list[dic
 
         # session updates
         if run_type == "london" and e["calendar"] == "us_equity":
+            continue
+        problem = session_data_problem(snapshot, run_type, now)
+        if problem:
+            skipped.append({"asset": aid, "horizon": "session", "why": problem})
             continue
         if e["calendar"] != "us_equity" and not e.get("sessions"):
             skipped.append({"asset": aid, "horizon": "session", "why": "no intraday data"})
