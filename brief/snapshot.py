@@ -27,7 +27,7 @@ from .analyze import analyze_asset
 from .http import FetchError
 from .levels import rnd
 from .sources import DAILY_ONLY, fetch_calendar, fetch_candles, fetch_derivatives, fetch_fear_greed
-from .timeutil import iso, last_bar_closed_by, local_label, parse_ts, trading_days_between, utcnow
+from .timeutil import UTC, iso, last_bar_closed_by, local_label, ny_time, parse_ts, trading_days_between, utcnow
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = ROOT / "config" / "assets.yaml"
@@ -96,6 +96,35 @@ def needs_full(prev_meta: dict, now: datetime) -> bool:
 
 
 # ---------------------------------------------------------------- loading
+def fill_from_hourly(daily: pd.DataFrame, hourly: pd.DataFrame | None, calendar: str, now: datetime) -> pd.DataFrame:
+    """US stocks: Yahoo's daily feed can lag hours behind the close (on 21 Oct 2026 the
+    day's bar was still missing four hours after the close). Build any missing completed
+    session from the hourly bars of regular hours, 09:30-16:00 New York. A later fetch
+    that has the official bar replaces this one."""
+    if calendar != "us_equity" or hourly is None or hourly.empty or daily is None or daily.empty:
+        return daily
+    expected = last_bar_closed_by(calendar, now)
+    d = daily.index[-1].date()
+    rows = {}
+    while True:
+        d = d + timedelta(days=1)
+        if d > expected:
+            break
+        if d.weekday() >= 5:
+            continue
+        sub = hourly[(hourly.index >= pd.Timestamp(ny_time(d, 9, 30))) & (hourly.index < pd.Timestamp(ny_time(d, 16, 0)))]
+        if len(sub) < 5:  # a holiday, or the hourly data is missing too
+            continue
+        rows[pd.Timestamp(d).tz_localize(UTC)] = {
+            "open": float(sub["open"].iloc[0]), "high": float(sub["high"].max()), "low": float(sub["low"].min()),
+            "close": float(sub["close"].iloc[-1]), "volume": float(sub["volume"].sum()),
+        }
+    if not rows:
+        return daily
+    add = pd.DataFrame.from_dict(rows, orient="index")[daily.columns]
+    return pd.concat([daily, add]).sort_index()
+
+
 def _check_fresh(daily: pd.DataFrame, calendar: str, now: datetime) -> None:
     if daily is None or daily.empty:
         raise FetchError("no daily bars")
@@ -149,6 +178,7 @@ def load_asset(acfg: dict, cfg: dict, prev_dir: Path | None, prev_meta: dict, fu
                         errors.append(f"{aid} {key} hourly: {exc}")
             if daily is None:
                 raise FetchError("no daily bars")
+            daily = fill_from_hourly(daily, hourly, acfg["calendar"], now)
             daily = daily[daily.index >= pd.Timestamp(now - timedelta(days=365 * years))]
             if hourly is not None:
                 hourly = hourly[hourly.index >= pd.Timestamp(now - timedelta(days=hdays))]

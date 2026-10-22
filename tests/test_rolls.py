@@ -50,3 +50,23 @@ def test_grader_voids_calls_across_a_roll():
                       "hourly": [], "rolls": [{"date": "2026-10-21", "change_pct": -4.9, "hourly_cut": None}]}}
     g = grade_call(row, candles, datetime(2026, 10, 22, 0, 40, tzinfo=UTC))
     assert g["status"] == "void" and "roll" in g["note"]
+
+
+def test_missing_stock_day_built_from_hourly():
+    from brief.snapshot import fill_from_hourly
+    daily = _daily(["2026-10-19", "2026-10-20"], [217.09, 216.47])
+    # hourly bars for 21 Oct: pre-market 08:00 New York, regular 09:30-15:30, post 16:00-19:00
+    times = ["2026-10-21T12:00:00Z"] + [f"2026-10-21T{h:02d}:30:00Z" for h in range(13, 20)] + \
+            [f"2026-10-21T{h:02d}:00:00Z" for h in range(20, 24)]
+    idx = pd.DatetimeIndex(pd.to_datetime(times, utc=True))
+    closes = [215.0, 216.0, 217.0, 218.5, 219.0, 220.0, 219.5, 219.26, 219.4, 219.3, 219.2, 219.1]
+    hourly = pd.DataFrame({"open": closes, "high": [c + 1 for c in closes], "low": [c - 1 for c in closes],
+                           "close": closes, "volume": 10.0}, index=idx)
+    out = fill_from_hourly(daily, hourly, "us_equity", datetime(2026, 10, 22, 0, 10, tzinfo=UTC))
+    assert out.index[-1].date().isoformat() == "2026-10-21"
+    bar = out.iloc[-1]
+    assert bar["open"] == 216.0 and bar["close"] == 219.26  # regular hours only: 13:30-19:30 UTC bars
+    assert bar["high"] == 221.0 and bar["low"] == 215.0 and bar["volume"] == 70.0
+    # crypto and futures are left alone; so is a stock whose daily feed is complete
+    assert len(fill_from_hourly(daily, hourly, "cme", datetime(2026, 10, 22, 0, 10, tzinfo=UTC))) == 2
+    assert len(fill_from_hourly(out, hourly, "us_equity", datetime(2026, 10, 22, 0, 10, tzinfo=UTC))) == 3
