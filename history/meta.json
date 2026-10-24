@@ -1,0 +1,89 @@
+{
+ "assets": {
+  "BTC": {
+   "source_key": "bitget_futures:BTCUSDT",
+   "label": "Bitget BTCUSDT perpetual"
+  },
+  "ETH": {
+   "source_key": "bitget_futures:ETHUSDT",
+   "label": "Bitget ETHUSDT perpetual"
+  },
+  "SOL": {
+   "source_key": "bitget_futures:SOLUSDT",
+   "label": "Bitget SOLUSDT perpetual"
+  },
+  "ZEC": {
+   "source_key": "coinbase:ZEC-USD",
+   "label": "Coinbase ZEC-USD spot"
+  },
+  "AAVE": {
+   "source_key": "bitget_futures:AAVEUSDT",
+   "label": "Bitget AAVEUSDT perpetual"
+  },
+  "HYPE": {
+   "source_key": "bitget_futures:HYPEUSDT",
+   "label": "Bitget HYPEUSDT perpetual"
+  },
+  "XAU": {
+   "source_key": "yfinance:GC=F",
+   "label": "COMEX gold futures, front month"
+  },
+  "CL": {
+   "source_key": "yfinance:CL=F",
+   "label": "NYMEX WTI futures, front month"
+  },
+  "NVDA": {
+   "source_key": "yfinance:NVDA",
+   "label": "Nasdaq NVDA"
+  },
+  "AMD": {
+   "source_key": "yfinance:AMD",
+   "label": "Nasdaq AMD"
+  },
+  "AVGO": {
+   "source_key": "yfinance:AVGO",
+   "label": "Nasdaq AVGO"
+  },
+  "TSM": {
+   "source_key": "yfinance:TSM",
+   "label": "NYSE TSM (ADR)"
+  },
+  "MU": {
+   "source_key": "yfinance:MU",
+   "label": "Nasdaq MU"
+  },
+  "SNDK": {
+   "source_key": "yfinance:SNDK",
+   "label": "Nasdaq SNDK"
+  },
+  "WDC": {
+   "source_key": "yfinance:WDC",
+   "label": "Nasdaq WDC"
+  },
+  "STX": {
+   "source_key": "yfinance:STX",
+   "label": "Nasdaq STX"
+  },
+  "SPY": {
+   "source_key": "yfinance:SPY",
+   "label": "NYSE Arca SPY"
+  },
+  "QQQ": {
+   "source_key": "yfinance:QQQ",
+   "label": "Nasdaq QQQ"
+  },
+  "SMH": {
+   "source_key": "yfinance:SMH",
+   "label": "Nasdaq SMH"
+  },
+  "DXY": {
+   "source_key": "yfinance:DX-Y.NYB",
+   "label": "ICE US dollar index"
+  },
+  "US10Y": {
+   "source_key": "yfinance:^TNX",
+   "label": "CBOE 10-year Treasury yield"
+  }
+ },
+ "last_full": "2026-10-24T00:37:02Z"
+}
